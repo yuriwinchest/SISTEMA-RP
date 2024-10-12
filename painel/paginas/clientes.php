@@ -228,14 +228,14 @@ if (@$clientes == 'ocultar') {
 
 					<div class="row">
 
-						<div class="col-md-6">
+						<div class="col-md-12">
 							<div class="tile">
 								<div class="table-responsive">
 									<table id="" class="text-left table table-bordered">
 
 
 										<tr>
-											<td style="width: 38%" class="bg-primary text-white">Telefone</td>
+											<td style="width: 20%" class="bg-primary text-white">Telefone</td>
 											<td><span id="telefone_dados"></span></td>
 										</tr>
 
@@ -262,17 +262,7 @@ if (@$clientes == 'ocultar') {
 											<td><span id="endereco_dados"></span></td>
 										</tr>
 
-
-									</table>
-								</div>
-							</div>
-						</div>
-
-						<div class="col-md-6">
-							<div class="tile">
-								<div class="table-responsive">
-									<table id="" class="text-left table table-bordered">
-
+										
 										<tr>
 											<td style="width: 25%" class="bg-primary text-white w_150">Número</td>
 											<td><span id="numero_dados"></span></td>
@@ -305,12 +295,12 @@ if (@$clientes == 'ocultar') {
 										</tr>
 
 
-
-
 									</table>
 								</div>
 							</div>
 						</div>
+
+
 
 					</div>
 

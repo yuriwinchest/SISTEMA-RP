@@ -11,7 +11,7 @@ $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 if($total_reg > 0){
 echo <<<HTML
-	<table class="table table-striped table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela_arquivos">
+	<table class="table table-striped table-hover table-bordered text-nowrap border-bottom dt-responsive" id="">
 		<thead> 
 			<tr> 				
 				<th>Nome</th>
