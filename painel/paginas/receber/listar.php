@@ -767,7 +767,7 @@ HTML;
 
 
 	function excluirConta(id) {
-    $('#mensagem-excluir').text('Excluindo...')
+    //$('#mensagem-excluir').text('Excluindo...')
 
 
     $('body').removeClass('timer-alert');

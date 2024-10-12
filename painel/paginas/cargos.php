@@ -47,13 +47,12 @@ if (@$cargos == 'ocultar') {
 
 
 
-					<div class="row">
+					<div class="row" style="margin-top: 20px">
 						<div class="col-md-8 mb-2 needs-validation was-validated">
-							<label>Nome</label>
-							<input type="text" class="form-control" id="nome" name="nome" placeholder="Nome" required>
+							<input type="text" class="form-control" id="nome" name="nome" placeholder="Digite o Cargo" required>
 						</div>
 
-						<div class="col-md-4" style="margin-top: 22px">
+						<div class="col-md-4">
 							<button id="btn_salvar" type="submit" class="btn btn-primary">Salvar<i class="fa fa-check ms-2"></i>
 							</button>
 							<button class="btn btn-primary" type="button" id="btn_carregando">

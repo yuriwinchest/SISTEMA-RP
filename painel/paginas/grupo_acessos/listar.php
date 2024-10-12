@@ -12,7 +12,7 @@ echo <<<HTML
 	<thead> 
 	<tr> 
 	<th align="center" width="5%" class="text-center">Selecionar</th>
-	<th>Nome</th>	
+	<th width="70%">Nome</th>	
 	<th>Acessos</th>
 	<th>Ações</th>
 	</tr> 
@@ -43,7 +43,7 @@ echo <<<HTML
 <td>
 	<big><a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}')" title="Editar Dados"><i class="fa fa-edit "></i></a></big>
 
-<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash "></i></a></big>
+<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
 
 </td>
 </tr>
