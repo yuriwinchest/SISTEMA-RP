@@ -266,10 +266,9 @@ HTML;
 		var ids_final = $('#ids').val();
 		if (ids_final == "") {
 			$('#btn-deletar').hide();
-			$('#btn-baixar').hide();
 		} else {
 			$('#btn-deletar').show();
-			$('#btn-baixar').show();
+
 		}
 	}
 

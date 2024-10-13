@@ -753,7 +753,7 @@ if (@$pagar == 'ocultar') {
 
 
 
-<!-- Modal -->
+<!-- Modal Resíduo-->
 <div class="modal fade" id="modalResiduos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog">
 		<div class="modal-content">

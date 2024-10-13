@@ -530,7 +530,11 @@ if (@$clientes == 'ocultar') {
 				</div>
 				<div class="modal-footer">
 
-					<button type="submit" class="btn btn-success">Baixar</button>
+					<button type="submit" class="btn btn-success" id="btn_salvar_baixar">Baixar</button>
+
+					<button class="btn btn-success" type="button" id="btn_carregando_baixar" style="display: none">
+						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...
+					</button>
 				</div>
 			</form>
 		</div>
@@ -736,6 +740,10 @@ if (@$clientes == 'ocultar') {
 
 <script type="text/javascript">
 	$("#form-baixar").submit(function () {
+
+		$('#btn_salvar_baixar').hide();
+		$('#btn_carregando_baixar').show();
+
 		event.preventDefault();
 		var formData = new FormData(this);
 
@@ -758,6 +766,9 @@ if (@$clientes == 'ocultar') {
 					$('#mensagem-baixar').addClass('text-danger')
 					$('#mensagem-baixar').text(mensagem)
 				}
+
+				$('#btn_salvar_baixar').show();
+				$('#btn_carregando_baixar').hide();
 
 			},
 

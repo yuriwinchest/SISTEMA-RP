@@ -356,12 +356,7 @@ HTML;
 
 
 
-
-
-
-
-
-	function selecionar(id) {
+		function selecionar(id) {
 
 		var ids = $('#ids').val();
 
@@ -369,34 +364,57 @@ HTML;
 			var novo_id = ids + id + '-';
 			$('#ids').val(novo_id);
 		} else {
-
 			var retirar = ids.replace(id + '-', '');
 			$('#ids').val(retirar);
 		}
 
-
-
 		var ids_final = $('#ids').val();
 		if (ids_final == "") {
-			$('#div_botoes').hide();
+			$('#btn-deletar').hide();
 		} else {
-			$('#div_botoes').show();
-		}
+			$('#btn-deletar').show();
 
+		}
 	}
 
 
 
 	function deletarSel() {
-		var ids = $('#ids').val();
-		var id = ids.split("-");
+		//$('#mensagem-excluir').text('Excluindo...')
 
-		for (i = 0; i < id.length - 1; i++) {
-			excluir_conta(id[i]);
-		}
 
-		limparCampos();
+		$('body').removeClass('timer-alert');
+		swal({
+			title: "Deseja Excluir?",
+			text: "Você não conseguirá recuperá-lo novamente!",
+			type: "error",
+			showCancelButton: true,
+			confirmButtonClass: "btn btn-danger",
+			confirmButtonText: "Sim, Excluir!",
+			closeOnConfirm: true
+
+		},
+			function () {
+
+				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+
+				var ids = $('#ids').val();
+				var id = ids.split("-");
+
+				for (i = 0; i < id.length - 1; i++) {
+					excluirMultiplos(id[i]);
+				}
+
+				setTimeout(() => {
+                    excluido();
+                    listar();
+                }, 1000);
+
+				limparCampos();
+
+
+
+			});
+
 	}
-
-
 </script>
