@@ -80,6 +80,9 @@ HTML;
 			$cor_adm = 'bg-danger-transparent text-danger';
 		}
 
+
+		$nomeF = mb_strimwidth($nome, 0, 40, "...");
+
 		echo <<<HTML
 <tr class="{$debito2}">
 <td align="center">
@@ -88,28 +91,28 @@ HTML;
 <label for="seletor-{$id}" class="custom-control-label mt-1 text-dark"></label>
 </div>
 </td>
-<td class="{$debito}"> {$nome}</td>
+<td class="{$debito}"> {$nomeF}</td>
 <td>{$telefone}</td>
 <td>{$email}</td>
 <td>{$cpf}</td>
 		<td><span class="badge font-weight-semibold {$cor_adm} tx-12" style="width:90%;">{$tipo_pessoa}</span></td>
 <td>{$data_cadF}</td>
 <td>
-	<big><a class="" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$cpf}','{$tipo_pessoa}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$complemento}')" title="Editar Dados"><i class="fa fa-edit text-info"></i></a></big>
+	<big><a class="btn btn-info-light btn-sm" class="" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$cpf}','{$tipo_pessoa}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$complemento}')" title="Editar Dados"><i class="fa fa-edit text-info"></i></a></big>
 
 
-		<big><a href="#" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
+		<big><a class="btn btn-danger-light btn-sm" href="#" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
 		
 
-<big><a class="" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}', '{$data_cadF}','{$cpf}','{$tipo_pessoa}','{$data_nascF}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$complemento}')" title="Mostrar Dados"><i class="fa fa-info-circle text-primary"></i></a></big>
+<big><a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}', '{$data_cadF}','{$cpf}','{$tipo_pessoa}','{$data_nascF}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$complemento}')" title="Mostrar Dados"><i class="fa fa-info-circle text-primary"></i></a></big>
 
 
-<big><a href="#" onclick="mostrarContas('{$nome}','{$id}')" title="Mostrar Contas"><i style="color: green" class="fa fa-hand-holding-dollar"></i></a></big>
+<big><a class="btn btn-success-light btn-sm" href="#" onclick="mostrarContas('{$nome}','{$id}')" title="Mostrar Contas"><i style="color: green" class="fa fa-hand-holding-dollar"></i></a></big>
 
-		<big><a href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o taxt-secondary"></i></a></big>
+		<big><a class="btn btn-dark-light btn-sm" href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o taxt-secondary"></i></a></big>
 
 
-		<big><a class="{$ocultar_whats}" class="" href="http://api.whatsapp.com/send?1=pt_BR&phone={$tel_whatsF}" title="Whatsapp" target="_blank"><i style="color: green" class="bi bi-whatsapp"></i></i></a></big>
+		<big><a class="{$ocultar_whats} btn btn-success-light btn-sm" class="" href="http://api.whatsapp.com/send?1=pt_BR&phone={$tel_whatsF}" title="Whatsapp" target="_blank"><i style="color: green" class="bi bi-whatsapp"></i></i></a></big>
 
 
 </td>

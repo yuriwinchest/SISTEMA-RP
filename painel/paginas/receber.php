@@ -5,6 +5,26 @@ if (@$receber == 'ocultar') {
 	echo "<script>window.location='index'</script>";
 	exit();
 }
+$query2 = $pdo->query("SELECT * FROM usuarios where id = '$id_usuario'");
+$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
+if (@count($res2) > 0) {
+	$nome_usuario = $res2[0]['nivel'];
+}
+
+
+//verificar se o caixa está aberto
+$query = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and data_fechamento is null");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas > 0) {
+
+} else {
+	if ($abertura_caixa == 'Sim' and $nome_usuario != 'Administrador') {
+	echo '<script>alert("Não possui caixa Aberto, abra o caixa!")</script>';
+	
+		echo '<script>window.location="caixas"</script>';
+	}
+}
 
 ?>
 

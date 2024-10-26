@@ -13,6 +13,8 @@ $data_atual = 'Y-m-d';
 $id = $_POST['id'];
 $valor_sangria = $_POST['valor_sangria'];
 
+$valor_sangria = str_replace('.', '', $valor_sangria);
+$valor_sangria = str_replace(',', '.', $valor_sangria);
 
 $pdo->query("INSERT $tabela SET usuario = '$id_usuario', valor = '$valor_sangria', data = curDate(), hora = curTime(), caixa = '$id'");
 

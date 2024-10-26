@@ -1,4 +1,4 @@
-<?php 
+<?php
 $tabela = 'usuarios';
 require_once("../../../conexao.php");
 
@@ -9,7 +9,7 @@ $nivel = $_POST['nivel'];
 $endereco = $_POST['endereco'];
 $id = $_POST['id'];
 $mostrar_registros = $_POST['mostrar_registros'];
-$numero =@ $_POST['numero'];
+$numero = @ $_POST['numero'];
 $bairro = @$_POST['bairro'];
 $cidade = @$_POST['cidade'];
 $estado = @$_POST['estado'];
@@ -24,19 +24,18 @@ $tipo_chave = @$_POST['tipo_chave'];
 
 // Validação da Chave Pix
 if ($pix == '' and $tipo_chave != '') {
-	echo 'Preencher o campo Pix';
-	exit();
+    echo 'Preencher o campo Pix';
+    exit();
 }
 
 if ($pix != '' and $tipo_chave == '') {
-	echo 'Escola o Tipo de Chave';
-	exit();
+    echo 'Escola o Tipo de Chave';
+    exit();
 }
 
 
-
-if($cpf != ""){
-	require_once("../../validar_cpf.php");
+if ($cpf != "") {
+    require_once("../../validar_cpf.php");
 }
 
 
@@ -47,27 +46,26 @@ $senha_crip = password_hash($senha, PASSWORD_DEFAULT);
 $query = $pdo->query("SELECT * from $tabela where email = '$email'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
-if(@count($res) > 0 and $id != $id_reg){
-	echo 'Email já Cadastrado!';
-	exit();
+if (@count($res) > 0 and $id != $id_reg) {
+    echo 'Email já Cadastrado!';
+    exit();
 }
 
 //validacao telefone
 $query = $pdo->query("SELECT * from $tabela where telefone = '$telefone'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
-if(@count($res) > 0 and $id != $id_reg){
-	echo 'Telefone já Cadastrado!';
-	exit();
+if (@count($res) > 0 and $id != $id_reg) {
+    echo 'Telefone já Cadastrado!';
+    exit();
 }
 
-if($data_nasc == ""){
-	$nasc = '';	
-}else{
-	$nasc = " ,data_nasc = '$data_nasc'";
-	
-}
+if ($data_nasc == "") {
+    $nasc = '';
+} else {
+    $nasc = " ,data_nasc = '$data_nasc'";
 
+}
 
 
 //validar troca da foto
@@ -75,11 +73,10 @@ $query = $pdo->query("SELECT * FROM $tabela where id = '$id'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 if ($total_reg > 0) {
-	$foto = $res[0]['foto'];
+    $foto = $res[0]['foto'];
 } else {
-	$foto = 'sem-foto.jpg';
+    $foto = 'sem-foto.jpg';
 }
-
 
 
 //SCRIPT PARA SUBIR FOTO NO SERVIDOR
@@ -92,89 +89,83 @@ $imagem_temp = @$_FILES['foto']['tmp_name'];
 
 if (@$_FILES['foto']['name'] != "") {
 
-	$ext = pathinfo($nome_img, PATHINFO_EXTENSION);
-	if ($ext == 'png' or $ext == 'jpg' or $ext == 'jpeg' or $ext == 'gif' or $ext == 'PNG' or $ext == 'JPG' or $ext == 'JPEG' or $ext == 'GIF') {
+    $ext = pathinfo($nome_img, PATHINFO_EXTENSION);
+    if ($ext == 'png' or $ext == 'jpg' or $ext == 'jpeg' or $ext == 'gif' or $ext == 'PNG' or $ext == 'JPG' or $ext == 'JPEG' or $ext == 'GIF') {
 
-		//EXCLUO A FOTO ANTERIOR
-		if ($foto != "sem-foto.jpg") {
-			@unlink('../../images/perfil/' . $foto);
-		}
+        //EXCLUO A FOTO ANTERIOR
+        if ($foto != "sem-foto.jpg") {
+            @unlink('../../images/perfil/' . $foto);
+        }
 
-		$foto = $nome_img;
+        $foto = $nome_img;
 
-		//pegar o tamanho da imagem
-		list($largura, $altura) = getimagesize($imagem_temp);
+        //pegar o tamanho da imagem
+        list($largura, $altura) = getimagesize($imagem_temp);
 
-		if ($largura > 1400) {
+        if ($largura > 1400) {
 
-
-			if ($ext == 'png') {
-				$image = imagecreatefrompng($imagem_temp);
-			} else if ($ext == 'jpeg' or $ext == 'jpg') {
-				$image = imagecreatefromjpeg($imagem_temp);
-			} else {
-				die("Formato de imagem não suportado.");
-			}
-
+            if ($ext == 'png') {
+                $image = imagecreatefrompng($imagem_temp);
+            } else if ($ext == 'jpeg' or $ext == 'jpg') {
+                $image = imagecreatefromjpeg($imagem_temp);
+            } else {
+                die("Formato de imagem não suportado.");
+            }
 
 
-			// Reduza a qualidade para 20% ajuste conforme necessário
-			imagejpeg($image, $caminho, 20);
-			imagedestroy($image);
+            // Reduza a qualidade para 20% ajuste conforme necessário
+            imagejpeg($image, $caminho, 20);
+            imagedestroy($image);
 
 
+        } else {
+            move_uploaded_file($imagem_temp, $caminho);
+        }
 
 
-		} else {
-			move_uploaded_file($imagem_temp, $caminho);
-		}
-
-
-
-	} else {
-		echo 'Extensão de Imagem não permitida!';
-		exit();
-	}
+    } else {
+        echo 'Extensão de Imagem não permitida!';
+        exit();
+    }
 }
 
 
-
-if($id == ""){
-$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', foto = '$foto', telefone = :telefone, data = curDate(), endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave'");
+if ($id == "") {
+    $query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', foto = '$foto', telefone = :telefone, data = curDate(), endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave'");
 
 //enviar whatsapp
-if($api_whatsapp != 'Não' and $telefone != ''){
+    if ($api_whatsapp != 'Não' and $telefone != '') {
 
-	$telefone_envio = '55'.preg_replace('/[ ()-]+/' , '' , $telefone);
-	
-	$mensagem_whatsapp = '*'.$nome_sistema.'*%0A%0A';
-	$mensagem_whatsapp .= '_Olá '.$nome.' Você foi Cadastrado no Sistema!!_ %0A';
-	$mensagem_whatsapp .= '*Email:* '.$email.' %0A';
-	$mensagem_whatsapp .= '*Senha:* '.$senha.' %0A';
-	$mensagem_whatsapp .= '*Url Acesso:* %0A'.$url_sistema.' %0A%0A';
-	$mensagem_whatsapp .= '_Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!_';
+        $telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone);
 
-	require('../../apis/texto.php');
-}
+        $mensagem_whatsapp = '*' . $nome_sistema . '*%0A%0A';
+        $mensagem_whatsapp .= '_Olá ' . $nome . ' Você foi Cadastrado no Sistema!!_ %0A';
+        $mensagem_whatsapp .= '*Email:* ' . $email . ' %0A';
+        $mensagem_whatsapp .= '*Senha:* ' . $senha . ' %0A';
+        $mensagem_whatsapp .= '*Url Acesso:* %0A' . $url_sistema . ' %0A%0A';
+        $mensagem_whatsapp .= '_Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!_';
+
+        require('../../apis/texto.php');
+    }
 
 //enviar email
-if($email != ''){
-	$url_logo = $url_sistema.'img/logo.png';
-	$destinatario = $email;
-	$assunto = 'Cadastrado no sistema '. $nome_sistema;
-	$mensagem_email = 'Olá '.$nome.' você foi cadastrado no sistema <br>';
-	$mensagem_email .= '<b>Usuário</b>: '.$email.'<br>';
-	$mensagem_email .= '<b>Senha: </b>'.$senha.'<br><br>';
-	$mensagem_email .= 'Url Acesso: <br><a href="'.$url_sistema.'">'.$url_sistema. '</a><br><br>';
-	$mensagem_email .= '<i>Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!</i>'. '<br><br>';
-	$mensagem_email .= "<img src='".$url_logo."' width='200px'> ";
-}
+    if ($email != '') {
+        $url_logo = $url_sistema . 'img/logo.png';
+        $destinatario = $email;
+        $assunto = 'Cadastrado no sistema ' . $nome_sistema;
+        $mensagem_email = 'Olá ' . $nome . ' você foi cadastrado no sistema <br>';
+        $mensagem_email .= '<b>Usuário</b>: ' . $email . '<br>';
+        $mensagem_email .= '<b>Senha: </b>' . $senha . '<br><br>';
+        $mensagem_email .= 'Url Acesso: <br><a href="' . $url_sistema . '">' . $url_sistema . '</a><br><br>';
+        $mensagem_email .= '<i>Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!</i>' . '<br><br>';
+        $mensagem_email .= "<img src='" . $url_logo . "' width='200px'> ";
+    }
 
 
-require('../../apis/disparar_email.php');
-	
-}else{
-$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, nivel = '$nivel', telefone = :telefone, endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto' where id = '$id'");
+    require('../../apis/disparar_email.php');
+
+} else {
+    $query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, nivel = '$nivel', telefone = :telefone, endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto' where id = '$id'");
 }
 $query->bindValue(":nome", "$nome");
 $query->bindValue(":email", "$email");
@@ -192,4 +183,4 @@ $query->bindValue(":complemento", "$complemento");
 $query->execute();
 
 echo 'Salvo com Sucesso';
- ?>
+?>

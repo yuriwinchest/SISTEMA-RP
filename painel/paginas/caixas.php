@@ -158,7 +158,7 @@ if (@$caixas == 'ocultar') {
 						<div class="col-md-3">
 							<div class="form-group">
 								<label>Valor Abertura</label>
-								<input type="text" class="form-control" name="valor_abertura" id="valor_abertura" required>
+								<input type="text" class="form-control" name="valor_abertura" id="valor_abertura" onKeyup="mascara_moeda('valor_abertura')" required>
 							</div>
 						</div>
 
@@ -217,7 +217,7 @@ if (@$caixas == 'ocultar') {
 
 
 
-<!-- Modal Fcehamento-->
+<!-- Modal Fechamento-->
 <div class="modal fade" id="modalFechar" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
 	aria-hidden="true">
 	<div class="modal-dialog" role="document">
@@ -240,8 +240,7 @@ if (@$caixas == 'ocultar') {
 						<div class="col-md-3">
 							<div class="form-group">
 								<label>Valor Abertura</label>
-								<input type="text" class="form-control" name="valor_abertura_fechar" id="valor_abertura_fechar"
-									readonly="">
+								<input type="text" class="form-control" name="valor_abertura_fechar" id="valor_abertura_fechar"	readonly="">
 							</div>
 						</div>
 
@@ -249,8 +248,8 @@ if (@$caixas == 'ocultar') {
 
 						<div class="col-md-4">
 							<div class="form-group">
-								<label>R$ Dinheiro Caixa</label>
-								<input type="text" class="form-control" name="total_caixa_fechar" id="total_caixa_fechar" required>
+								<label>Valor Fechamento</label>
+								<input type="text" class="form-control" name="total_caixa_fechar" id="total_caixa_fechar" onKeyup="mascara_moeda('total_caixa_fechar')" required>
 							</div>
 						</div>
 					</div>
@@ -307,7 +306,7 @@ if (@$caixas == 'ocultar') {
 						<div class="col-md-4">
 							<div class="form-group">
 								<label>Valor Sangria</label>
-								<input type="text" class="form-control" name="valor_sangria" id="valor_sangria" placeholder="0,00">
+								<input type="text" class="form-control" name="valor_sangria" id="valor_sangria" onKeyup="mascara_moeda('valor_sangria')" placeholder="0,00">
 							</div>
 						</div>
 

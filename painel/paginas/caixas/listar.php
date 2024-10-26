@@ -186,8 +186,8 @@ HTML;
 		$total_sangriasF = @number_format($total_sangrias, 2, ',', '.');
 
 
-		$total_caixa = $total_recebido - $total_saidas + $valor_abertura - $total_sangrias;
 
+		$total_caixa = $total_recebido - $total_saidas + $valor_abertura - $total_sangrias;
 
 
 
@@ -300,6 +300,8 @@ HTML;
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Registro');
 
+		mascara_moeda('valor_abertura');
+
 	}
 
 
@@ -307,18 +309,23 @@ HTML;
 
 	function fechamento(id, operador, valor_abertura, total_caixa) {
 
-
+		//Formatar o valor antes de mandar pro campo
+		let numeroFormatado = total_caixa.replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace('.', ',');
 
 		$('#id_fechar').val(id);
 		$('#nome_operador').val(operador);
 		$('#valor_abertura_fechar').val(valor_abertura);
-		$('#total_caixa_fechar').val(total_caixa);
+		$('#total_caixa_fechar').val(numeroFormatado);
 
-
+		
 
 		$('#tituloModalFechar').text('Fechar Caixa');
 		$('#modalFechar').modal('show');
 		$('#mensagem_fechar').text('');
+
+		mascara_moeda('valor_abertura_fechar');
+
+
 
 
 
@@ -344,6 +351,8 @@ HTML;
 		//$('#operador').val('').change();		
 		$('#valor_abertura').val('<?= $ultimo_valor_fechado ?>');
 		$('#data_abertura').val('<?= $data_atual ?>');
+
+		mascara_moeda('valor_abertura');
 
 		$('#obs').val('');
 		$('#ids').val('');

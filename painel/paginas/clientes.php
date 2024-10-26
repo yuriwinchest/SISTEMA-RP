@@ -57,7 +57,7 @@ if (@$clientes == 'ocultar') {
 
 					<div class="row">
 						<div class="col-md-6 mb-2 col-6 needs-validation was-validated">
-							<label>Nome<span class="text-danger">*</span></label>
+							<label>Nome <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
 							<div class="form-group has-success mg-b-0">
 								<input class="form-control" id="nome" name="nome" placeholder="Digite o Nome" required type="text"
 									value="This is input">

@@ -139,22 +139,6 @@ if ($valor == $valor_antigo) {
 		$pdo->query("INSERT INTO $tabela set descricao = '$descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$valor_antigo', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$saida_antiga', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', usuario_lanc = '$id_usuario', caixa = '$id_caixa', hora = curTime(), recorrencia_inf = '$recorrencia_inf'");
 		$id_ult_registro = $pdo->lastInsertId();
 
-		if ($api_whatsapp != 'Não' and $telefone_sistema != '') {
-
-			$valorF = @number_format($valor, 2, ',', '.');
-
-			$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_sistema);
-			$mensagem_whatsapp = '*' . $nome_sistema . '*%0A';
-			$mensagem_whatsapp .= '_Conta Vencendo Hoje_ %0A';
-			$mensagem_whatsapp .= '*Descrição:* ' . $descricao . ' %0A';
-			$mensagem_whatsapp .= '*Valor:* ' . $valorF . ' %0A';
-
-			$data_agd = $nova_data_vencimento . ' 08:00:00';
-			require('../../apis/agendar.php');
-
-			$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id_ult_registro'");
-
-		}
 
 
 	}

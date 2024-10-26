@@ -10,10 +10,21 @@ $id_usuario = @$_SESSION['id'];
 $operador = $_POST['operador'];
 $valor_abertura = $_POST['valor_abertura'];
 $data_abertura = $_POST['data_abertura'];
+$data_abertura = $_POST['data_abertura'];
 
+$valor_abertura = str_replace('.', '', $valor_abertura);
+$valor_abertura = str_replace(',', '.', $valor_abertura);
 
 $obs = $_POST['obs'];
 $id = $_POST['id'];
+
+//verificar se está aberto
+$query2 = $pdo->query("SELECT * FROM caixas where operador = '$operador' and data_fechamento is null");
+$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
+if(@count($res2) > 0){
+	echo 'O caixa já está aberto para esse usuário!';
+	exit();
+}
 
 if($id == ""){
 

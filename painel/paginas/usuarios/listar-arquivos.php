@@ -48,13 +48,13 @@ if($ext == 'pdf' || $ext == 'PDF'){
 $data_cadF = implode('/', array_reverse(@explode('-', $data_cad)));
 
 echo <<<HTML
-			<tr>					
+			<tr>
 				<td class="">{$nome}</td>
-				<td class="esc">{$data_cadF}</td>				
+				<td class="esc">{$data_cadF}</td>
 				<td><a href="images/arquivos/{$arquivo}" target="_blank"><img src="images/arquivos/{$tumb_arquivo}" width="18px" height="18px"></a></td>
 				<td>
 
-					<div class="dropdown" style="display: inline-block;">                      
+					<div class="dropdown" style="display: inline-block;">
                         <a href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown"><i class="fe fe-trash-2 text-danger"></i> </a>
                         <div  class="dropdown-menu tx-13">
                         <div class="dropdown-item-text botao_excluir_listar">
