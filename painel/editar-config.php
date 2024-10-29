@@ -21,6 +21,7 @@ $token_whatsapp = $_POST['token_whatsapp'];
 $instancia_whatsapp = $_POST['instancia_whatsapp'];
 $alterar_acessos = $_POST['alterar_acessos'];
 $dados_pagamento = $_POST['dados_pagamento'];
+$abertura_caixa = $_POST['abertura_caixa'];
 
 $multa_atraso = str_replace(',', '.', $multa_atraso);
 $multa_atraso = str_replace('%', '', $multa_atraso);
@@ -108,7 +109,7 @@ if(@$_FILES['foto-painel']['name'] != ""){
 }
 
 
-$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, telefone = :telefone, endereco = :endereco, instagram = :instagram, multa_atraso = :multa_atraso, juros_atraso = :juros_atraso, marca_dagua = :marca_dagua, marca_dagua = :marca_dagua, assinatura_recibo = :assinatura_recibo, impressao_automatica = :impressao_automatica, cnpj = :cnpj_sistema, entrar_automatico = :entrar_automatico, mostrar_preloader = :mostrar_preloader, ocultar_mobile = :ocultar_mobile, api_whatsapp = '$api_whatsapp', token_whatsapp = :token_whatsapp, instancia_whatsapp = :instancia_whatsapp, alterar_acessos = :alterar_acessos, dados_pagamento = :dados_pagamento where id = 1");
+$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, telefone = :telefone, endereco = :endereco, instagram = :instagram, multa_atraso = :multa_atraso, juros_atraso = :juros_atraso, marca_dagua = :marca_dagua, marca_dagua = :marca_dagua, assinatura_recibo = :assinatura_recibo, impressao_automatica = :impressao_automatica, cnpj = :cnpj_sistema, entrar_automatico = :entrar_automatico, mostrar_preloader = :mostrar_preloader, ocultar_mobile = :ocultar_mobile, api_whatsapp = '$api_whatsapp', token_whatsapp = :token_whatsapp, instancia_whatsapp = :instancia_whatsapp, alterar_acessos = :alterar_acessos, dados_pagamento = :dados_pagamento, abertura_caixa = :abertura_caixa where id = 1");
 
 $query->bindValue(":nome", "$nome");
 $query->bindValue(":email", "$email");
@@ -128,6 +129,7 @@ $query->bindValue(":token_whatsapp", "$token_whatsapp");
 $query->bindValue(":instancia_whatsapp", "$instancia_whatsapp");
 $query->bindValue(":alterar_acessos", "$alterar_acessos");
 $query->bindValue(":dados_pagamento", "$dados_pagamento");
+$query->bindValue(":abertura_caixa", "$abertura_caixa");
 $query->execute();
 
 echo 'Editado com Sucesso';

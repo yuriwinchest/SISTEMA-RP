@@ -72,7 +72,7 @@ if (@$anotacoes == 'ocultar') {
 					</div>
 
 					<div class="col-md-1 mb-2" style="margin-top: 26px">
-						<button type="submit" id="btn_salvar" class="btn btn-primary">Salvar</button>
+						<button type="submit" id="btn_salvar" class="btn btn-primary">Salvar <i class="fa-solid fa-check"></i></button>
 						<small>
 							<div id="mensagem" align="center"></div>
 						</small>

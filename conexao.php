@@ -34,7 +34,7 @@ $query = $pdo->query("SELECT * from config");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas == 0) {
-	$pdo->query("INSERT INTO config SET nome = '$nome_sistema', email = '$email_sistema', telefone = '$telefone_sistema', logo = 'logo.png', logo_rel = 'logo.jpg', icone = 'icone.png', ativo = 'Sim', multa_atraso = '0', juros_atraso = '0', marca_dagua = 'Sim', assinatura_recibo = 'Não', impressao_automatica = 'Não', api_whatsapp = 'Não', alterar_acessos = 'Não'");
+	$pdo->query("INSERT INTO config SET nome = '$nome_sistema', email = '$email_sistema', telefone = '$telefone_sistema', logo = 'logo.png', logo_rel = 'logo.jpg', icone = 'icone.png', ativo = 'Sim', multa_atraso = '0', juros_atraso = '0', marca_dagua = 'Sim', assinatura_recibo = 'Não', impressao_automatica = 'Não', api_whatsapp = 'Não', alterar_acessos = 'Não', abertura_caixa = 'Sim'");
 } else {
 	$nome_sistema = $res[0]['nome'];
 	$email_sistema = $res[0]['email'];
@@ -59,6 +59,7 @@ if ($linhas == 0) {
 	$instancia_whatsapp = $res[0]['instancia_whatsapp'];
 	$alterar_acessos = $res[0]['alterar_acessos'];
 	$dados_pagamento = $res[0]['dados_pagamento'];
+	$abertura_caixa = $res[0]['abertura_caixa'];
 
 	$tel_whats = '55' . preg_replace('/[ ()-]+/', '', $telefone_sistema);
 

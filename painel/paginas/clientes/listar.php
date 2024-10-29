@@ -18,19 +18,19 @@ if ($linhas > 0) {
 	echo <<<HTML
 <small>
 	<table class="table table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela">
-	<thead> 
-	<tr> 
+	<thead>
+	<tr>
 	<th align="center" width="5%" class="text-center">Selecionar</th>
 	<th>Nome</th>
-	<th >Telefone</th>	
-	<th >Email</th>			
+	<th >Telefone</th>
+	<th >Email</th>
 	<th >CPF / CNPJ</th>
 	<th >Tipo Pessoa</th>
-	<th >Data Cadastro</th>	
+	<th >Data Cadastro</th>
 	<th>Ações</th>
-	</tr> 
-	</thead> 
-	<tbody>	
+	</tr>
+	</thead>
+	<tbody>
 HTML;
 
 	for ($i = 0; $i < $linhas; $i++) {
@@ -60,7 +60,7 @@ HTML;
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 		$linhas2 = @count($res2);
 		if ($linhas2 > 0) {
-			$debito2 = 'table-danger';
+            $debito2 = '#ffdddd';
 			$debito = 'text-danger';
 		} else {
 			$debito2 = '';
@@ -84,7 +84,7 @@ HTML;
 		$nomeF = mb_strimwidth($nome, 0, 40, "...");
 
 		echo <<<HTML
-<tr class="{$debito2}">
+<tr style="background: {$debito2}">
 <td align="center">
 <div class="custom-checkbox custom-control">
 <input type="checkbox" class="custom-control-input" id="seletor-{$id}" onchange="selecionar('{$id}')">

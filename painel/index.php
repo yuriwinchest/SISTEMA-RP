@@ -23,7 +23,6 @@ if ($mes_atual == '04' || $mes_atual == '06' || $mes_atual == '09' || $mes_atual
 	} else {
 		$data_final_mes = $ano_atual . '-' . $mes_atual . '-28';
 	}
-
 } else {
 	$data_final_mes = $ano_atual . '-' . $mes_atual . '-31';
 }
@@ -270,7 +269,7 @@ if (@count($res1) > 0) {
 													$vencimento = $res[$i]['vencimento'];
 													$valorF = @number_format($valor, 2, ',', '.');
 													$vencimentoF = implode('/', array_reverse(@explode('-', $vencimento)));
-													?>
+												?>
 
 													<a href="receber" class="dropdown-item d-flex border-bottom">
 
@@ -320,7 +319,7 @@ if (@count($res1) > 0) {
 													<h6 class="dropdown-title mb-1 tx-15 font-weight-semibold">Contas a Pagar</h6>
 
 												</div>
-												<p class="dropdown-title-text subtext mb-0 op-6 pb-0 tx-12 "><?php echo $linhas ?> Contas	Vencidas!</p>
+												<p class="dropdown-title-text subtext mb-0 op-6 pb-0 tx-12 "><?php echo $linhas ?> Contas Vencidas!</p>
 											</div>
 
 											<div class="main-message-list Notification-scroll">
@@ -337,7 +336,7 @@ if (@count($res1) > 0) {
 													$valor = $res[$i]['valor'];
 													$valorF = @number_format($valor, 2, ',', '.');
 													$vencimentoF = implode('/', array_reverse(@explode('-', $vencimento)));
-													?>
+												?>
 
 													<a href="pagar" class="dropdown-item d-flex border-bottom">
 
@@ -521,6 +520,12 @@ if (@count($res1) > 0) {
 								<a class="side-menu__item" href="tarefas">
 									<i class="fa fa-calendar text-white"></i>
 									<span class="side-menu__label" style="margin-left: 15px">Tarefas / Agenda</span></a>
+							</li>
+
+							<li class="slide <?php echo @$agendas ?>">
+								<a class="side-menu__item" href="agendas">
+									<i class="fa fa-calendar text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Agenda</span></a>
 							</li>
 
 							<li class="slide <?php echo @$anotacoes ?>">
@@ -1053,6 +1058,14 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 
+						<div class="col-md-3">
+							<label>Abert Obrigatória Caxa</label>
+							<select name="abertura_caixa" class="form-select">
+								<option value="Sim" <?php if ($abertura_caixa == 'Sim') { ?> selected <?php } ?>>Sim</option>
+								<option value="Não" <?php if ($abertura_caixa == 'Não') { ?> selected <?php } ?>>Não</option>
+							</select>
+						</div>
+
 
 
 
@@ -1445,8 +1458,22 @@ if (@count($res1) > 0) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.min.js"></script>
 
 
+
+
+
+<script src='js/index.global.min.js'></script>
+<script src="js/bootstrap5/index.global.min.js"></script>
+<script src='js/core/locales-all.global.min.js'></script>
+
+<script src='js/custom.js'></script>
+<script src='js/converter_data.js'></script>
+<script src='js/carregar_eventos.js'></script>
+
+
+
+
 <script type="text/javascript">
-	$(document).ready(function () {
+	$(document).ready(function() {
 
 
 		$('.sel2').select2({
@@ -1497,7 +1524,6 @@ if (@count($res1) > 0) {
 </script>
 
 <script type="text/javascript">
-
 	const modalForm = document.getElementById('modalForm')
 	const nome = document.getElementById('nome')
 
@@ -1514,7 +1540,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1533,7 +1559,7 @@ if (@count($res1) > 0) {
 
 
 <script type="text/javascript">
-	$("#form-perfil").submit(function () {
+	$("#form-perfil").submit(function() {
 
 		event.preventDefault();
 		var formData = new FormData(this);
@@ -1543,7 +1569,7 @@ if (@count($res1) > 0) {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#msg-perfil').text('');
 				$('#msg-perfil').removeClass()
 				if (mensagem.trim() == "Editado com Sucesso") {
@@ -1576,7 +1602,7 @@ if (@count($res1) > 0) {
 
 
 <script type="text/javascript">
-	$("#form-config").submit(function () {
+	$("#form-config").submit(function() {
 
 		event.preventDefault();
 		var formData = new FormData(this);
@@ -1586,7 +1612,7 @@ if (@count($res1) > 0) {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#msg-config').text('');
 				$('#msg-config').removeClass()
 				if (mensagem.trim() == "Editado com Sucesso") {
@@ -1623,7 +1649,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1647,7 +1673,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1671,7 +1697,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1693,7 +1719,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1714,7 +1740,7 @@ if (@count($res1) > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -1739,10 +1765,15 @@ if (@count($res1) > 0) {
 		$.ajax({
 			url: 'apis/teste_whatsapp.php',
 			method: 'POST',
-			data: { seletor_api, token, instancia, telefone_sistema },
+			data: {
+				seletor_api,
+				token,
+				instancia,
+				telefone_sistema
+			},
 			dataType: "html",
 
-			success: function (result) {
+			success: function(result) {
 				alert(result)
 			}
 		});
@@ -1752,7 +1783,6 @@ if (@count($res1) > 0) {
 
 
 <script>
-
 	function limpa_formulário_cep_perfil() {
 		//Limpa valores do formulário de cep.
 		document.getElementById('endereco_perfil').value = ("");
@@ -1820,7 +1850,6 @@ if (@count($res1) > 0) {
 			limpa_formulário_cep_perfil();
 		}
 	};
-
 </script>
 
 

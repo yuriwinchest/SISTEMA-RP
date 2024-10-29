@@ -8,6 +8,7 @@ $configuracoes = 'ocultar';
 $caixas = 'ocultar';
 $tarefas = 'ocultar';
 $lancar_tarefas = 'ocultar';
+$agendas = 'ocultar';
 
 //grupo pessoas
 $usuarios = 'ocultar';
@@ -30,6 +31,7 @@ $rel_sintetico_despesas = 'ocultar';
 $rel_sintetico_receber = 'ocultar';
 $rel_balanco = 'ocultar';
 $rel_inadimplementes = 'ocultar';
+
 
 
 
@@ -135,6 +137,10 @@ if($total_reg > 0){
 
 		if($chave == 'rel_inadimplementes'){
 			$rel_inadimplementes = '';
+		}
+
+		if ($chave == 'agendas') {
+			$agendas = '';
 		}
 
 

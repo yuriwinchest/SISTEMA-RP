@@ -323,7 +323,7 @@ HTML;
 
 		if ($pago == 'Sim') {
 			$classe_pago = 'verde';
-			$classe_pago2 = 'table-success';
+			$classe_pago2 = '#ddffe1';
 			$ocultar = 'ocultar';
 			$ocultar_pendentes = '';
 			$total_pago += $subtotal;
@@ -334,14 +334,14 @@ HTML;
 			$total_pago += $valor;
 			$ocultar_pendentes = 'ocultar';
 		} else if ($pago == 'Não' and @strtotime($vencimento) == @strtotime($data_hoje)) {
-			$classe_pago2 = 'table-warning';
+			$classe_pago2 = '#fff8dd';
 			$classe_pago = 'text-danger';
 			$ocultar = '';
 			$total_pago += $valor;
 			$ocultar_pendentes = 'ocultar';
 		} else {
 			$classe_pago = 'text-danger';
-			$classe_pago2 = 'table-danger';
+			$classe_pago2 = '#ffdddd';
 			$ocultar = '';
 			$total_pendentes += $valor;
 			$ocultar_pendentes = 'ocultar';
@@ -422,7 +422,7 @@ HTML;
 
 		echo <<<HTML
 
-<tr class="{$classe_pago2}">
+<tr style="background: {$classe_pago2}">
 <td align="center">
 <div class="custom-checkbox custom-control">
 <input type="checkbox" class="custom-control-input" id="seletor-{$id}" onchange="selecionar('{$id}')">

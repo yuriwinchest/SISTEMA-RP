@@ -17,11 +17,10 @@ $query = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and da
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
-
 } else {
 	if ($abertura_caixa == 'Sim' and $nome_usuario != 'Administrador') {
-	echo '<script>alert("Não possui caixa Aberto, abra o caixa!")</script>';
-	
+		echo '<script>alert("Não possui caixa Aberto, abra o caixa!")</script>';
+
 		echo '<script>window.location="caixas"</script>';
 	}
 }
@@ -128,7 +127,7 @@ if ($linhas > 0) {
 
 
 			<?php if (@$_SESSION['nivel'] == 'Administrador') { ?>
-		
+
 				<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 					<a href="#" onclick=" $('#tipo_data_filtro').val('Recebidas'); $('#pago').val('Sim'); buscar();">
 						<div class="card-header" style="background: #2b7a00">
@@ -142,8 +141,8 @@ if ($linhas > 0) {
 						</div>
 					</a>
 				</div>
-		
-		
+
+
 				<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 					<a href="#" onclick="$('#tipo_data_filtro').val('Todas'); $('#pago').val(''); buscar();">
 						<div class="card-header" style="background: #1f1f1f;">
@@ -158,7 +157,7 @@ if ($linhas > 0) {
 					</a>
 				</div>
 			<?php } ?>
-		
+
 			<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 				<a class="text-white" href="#" onclick="$('#tipo_data_filtro').val('Pedentes'); $('#pago').val(''); buscar();">
 					<div class="card-header" style="background: #920801">
@@ -172,8 +171,8 @@ if ($linhas > 0) {
 					</div>
 				</a>
 			</div>
-		
-		
+
+
 		</div>
 
 
@@ -354,7 +353,7 @@ if ($linhas > 0) {
 					</small>
 				</div>
 				<div class="modal-footer">
-					<button id="btn_salvar" type="submit" class="btn btn-primary">Salvar</button>
+					<button id="btn_salvar" type="submit" class="btn btn-primary">Salvar <i class="fa-solid fa-check"></i></button>
 
 					<button class="btn btn-primary" type="button" id="btn_carregando">
 						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...
@@ -553,12 +552,12 @@ if ($linhas > 0) {
 
 										if ($nome_item != 'Uma Vez' and $nome_item != 'Única') {
 
-											?>
+									?>
 											<option <?php if ($nome_item == 'Mensal') { ?> selected <?php } ?> value="<?php echo $dias ?>">
 												<?php echo $nome_item ?>
 											</option>
 
-										<?php }
+									<?php }
 									} ?>
 
 
@@ -640,7 +639,7 @@ if ($linhas > 0) {
 										foreach ($res[$i] as $key => $value) {
 										}
 
-										?>
+									?>
 										<option value="<?php echo $res[$i]['id'] ?>"><?php echo $res[$i]['nome'] ?></option>
 
 									<?php } ?>
@@ -828,12 +827,14 @@ if ($linhas > 0) {
 
 
 
-<script type="text/javascript">var pag = "<?= $pag ?>"</script>
+<script type="text/javascript">
+	var pag = "<?= $pag ?>"
+</script>
 <script src="js/ajax.js"></script>
 
 
 <script type="text/javascript">
-	$(document).ready(function () {
+	$(document).ready(function() {
 		$('.sel2').select2({
 			dropdownParent: $('#modalForm')
 		});
@@ -843,7 +844,6 @@ if ($linhas > 0) {
 
 
 <script type="text/javascript">
-
 	function marcarTodos() {
 		let checkbox = document.getElementById('input-todos');
 		var usuario = $('#id_permissoes').val();
@@ -854,7 +854,6 @@ if ($linhas > 0) {
 			limparPermissoes(usuario);
 		}
 	}
-
 </script>
 
 
@@ -898,7 +897,7 @@ if ($linhas > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -977,10 +976,13 @@ if ($linhas > 0) {
 		$.ajax({
 			url: 'paginas/' + pag + "/calcular_taxa.php",
 			method: 'POST',
-			data: { valor, pgto },
+			data: {
+				valor,
+				pgto
+			},
 			dataType: "html",
 
-			success: function (result) {
+			success: function(result) {
 				$('#valor-taxa').val(result);
 				totalizar();
 			}
@@ -993,7 +995,7 @@ if ($linhas > 0) {
 
 
 <script type="text/javascript">
-	$("#form-baixar").submit(function () {
+	$("#form-baixar").submit(function() {
 
 		$('#btn_salvar_baixar').hide();
 		$('#btn_carregando_baixar').show();
@@ -1007,7 +1009,7 @@ if ($linhas > 0) {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#mensagem-baixar').text('');
 				$('#mensagem-baixar').removeClass()
 				if (mensagem.trim() == "Baixado com Sucesso") {
@@ -1035,7 +1037,7 @@ if ($linhas > 0) {
 
 
 <script type="text/javascript">
-	$("#form-parcelar").submit(function () {
+	$("#form-parcelar").submit(function() {
 
 		$('#btn_salvar_parcelar').hide();
 		$('#btn_carregando_parcelar').show();
@@ -1049,7 +1051,7 @@ if ($linhas > 0) {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#mensagem-parcelar').text('');
 				$('#mensagem-parcelar').removeClass()
 				if (mensagem.trim() == "Parcelado com Sucesso") {
@@ -1080,10 +1082,12 @@ if ($linhas > 0) {
 		$.ajax({
 			url: 'paginas/' + pag + "/valor_baixar.php",
 			method: 'POST',
-			data: { ids },
+			data: {
+				ids
+			},
 			dataType: "html",
 
-			success: function (result) {
+			success: function(result) {
 				$("#total_contas").html(result);
 
 			}
@@ -1094,7 +1098,7 @@ if ($linhas > 0) {
 
 
 <script type="text/javascript">
-	$("#form-arquivos").submit(function () {
+	$("#form-arquivos").submit(function() {
 		event.preventDefault();
 		var formData = new FormData(this);
 
@@ -1103,7 +1107,7 @@ if ($linhas > 0) {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#mensagem-arquivo').text('');
 				$('#mensagem-arquivo').removeClass()
 				if (mensagem.trim() == "Inserido com Sucesso") {
@@ -1134,15 +1138,16 @@ if ($linhas > 0) {
 		$.ajax({
 			url: 'paginas/' + pag + "/listar-arquivos.php",
 			method: 'POST',
-			data: { id },
+			data: {
+				id
+			},
 			dataType: "text",
 
-			success: function (result) {
+			success: function(result) {
 				$("#listar-arquivos").html(result);
 			}
 		});
 	}
-
 </script>
 
 
@@ -1187,7 +1192,7 @@ if ($linhas > 0) {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
