@@ -78,21 +78,19 @@ $("#form").submit(function () {
 function excluir(id) {
     //$('#mensagem-excluir').text('Excluindo...')
 
-
     $('body').removeClass('timer-alert');
-    swal({
+    Swal.fire({
         title: "Deseja Excluir?",
         text: "Você não conseguirá recuperá-lo novamente!",
-        type: "warning",
-         showCancelButton: true,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
+        cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
         confirmButtonText: "Sim, Excluir!",
-        cancelButtonText: "Não, cancel!",
+        cancelButtonText: "Cancel",
         reverseButtons: true
-
-    },
-        function () {
-
-            //swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+    }).then((result) => {
+        if (result.isConfirmed) {
 
 
             $.ajax({
@@ -103,21 +101,31 @@ function excluir(id) {
 
                 success: function (mensagem) {
                     if (mensagem.trim() == "Excluído com Sucesso") {
-                        excluido();
+
+                        // Ação de exclusão aqui
+                        Swal.fire({
+                            title: 'Excluido com Sucesso!',
+                            text: 'Fecharei em 1 segundo.',
+                            icon: "success",
+                            timer: 1000
+                        })
+                        //excluido();
                         listar();
                         limparCampos();
-                        
+
+
                     } else {
                         $('#mensagem-excluir').addClass('text-danger')
                         $('#mensagem-excluir').text(mensagem)
                     }
                 }
             });
-        });
+            
+        }
+    });
+        
 
-}
-
-
+};
 
 
 function excluirMultiplos(id) {

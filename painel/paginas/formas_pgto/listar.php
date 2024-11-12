@@ -1,13 +1,13 @@
-<?php 
+<?php
 require_once("../../../conexao.php");
 $tabela = 'formas_pgto';
 
 $query = $pdo->query("SELECT * FROM $tabela ORDER BY id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
-if($total_reg > 0){
+if ($total_reg > 0) {
 
-echo <<<HTML
+	echo <<<HTML
 <small>
 	<table class="table table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela">
 	<thead> 
@@ -21,17 +21,18 @@ echo <<<HTML
 	<tbody>	
 HTML;
 
-for($i=0; $i < $total_reg; $i++){
-	foreach ($res[$i] as $key => $value){}
-	$id = $res[$i]['id'];
-	$nome = $res[$i]['nome'];
-	$taxa = $res[$i]['taxa'];
+	for ($i = 0; $i < $total_reg; $i++) {
+		foreach ($res[$i] as $key => $value) {
+		}
+		$id = $res[$i]['id'];
+		$nome = $res[$i]['nome'];
+		$taxa = $res[$i]['taxa'];
 
-	if($taxa == ""){
-		$taxa = 0;
-	}
-	
-echo <<<HTML
+		if ($taxa == "") {
+			$taxa = 0;
+		}
+
+		echo <<<HTML
 <tr class="">
 <td align="center">
 <div class="custom-checkbox custom-control">
@@ -50,18 +51,15 @@ echo <<<HTML
 		</td>
 </tr>
 HTML;
+	}
 
-}
-
-echo <<<HTML
+	echo <<<HTML
 </tbody>
 <small><div align="center" id="mensagem-excluir"></div></small>
 </table>
 </small>
 HTML;
-
-
-}else{
+} else {
 	echo 'Não possui nenhum registro Cadastrado!';
 }
 
@@ -69,18 +67,18 @@ HTML;
 
 
 <script type="text/javascript">
-	$(document).ready( function () {
-    $('#tabela').DataTable({
-    		"ordering": false,
+	$(document).ready(function() {
+		$('#tabela').DataTable({
+			"ordering": false,
 			"stateSave": true
-    	});
-    $('#tabela_filter label input').focus();
-} );
+		});
+		$('#tabela_filter label input').focus();
+	});
 </script>
 
 
 <script type="text/javascript">
-	function editar(id, nome, taxa){
+	function editar(id, nome, taxa) {
 		$('#id').val(id);
 		$('#nome').val(nome);
 		$('#taxa').val(taxa);
@@ -88,7 +86,7 @@ HTML;
 		$('#modalForm').modal('show');
 	}
 
-	function limparCampos(){
+	function limparCampos() {
 		$('#nome').val('');
 		$('#taxa').val('');
 	}
@@ -115,25 +113,25 @@ HTML;
 	}
 
 
-
-	function deletarSel() {
+	function deletarSel(id) {
 		//$('#mensagem-excluir').text('Excluindo...')
 
-
 		$('body').removeClass('timer-alert');
-		swal({
+		Swal.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			type: "error",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonClass: "btn btn-danger",
+			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
+			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			closeOnConfirm: true
+			cancelButtonText: "Cancel",
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
 
-		},
-			function () {
 
-				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+
 
 				var ids = $('#ids').val();
 				var id = ids.split("-");
@@ -143,16 +141,23 @@ HTML;
 				}
 
 				setTimeout(() => {
-					excluido();
+					// Ação de exclusão aqui
+					Swal.fire({
+						title: 'Excluido com Sucesso!',
+						text: 'Fecharei em 1 segundo.',
+						icon: "success",
+						timer: 1000
+					})
+
 					listar();
 				}, 1000);
 
 				limparCampos();
 
 
+			}
+		});
 
-			});
 
-	}
-
+	};
 </script>

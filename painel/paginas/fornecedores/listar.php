@@ -44,7 +44,7 @@ HTML;
 
 		if ($pix != '') {
 			$chave_pix_mod = $tipo_chave . ': ' . $pix;
-		}else{
+		} else {
 			$chave_pix_mod = '';
 		}
 
@@ -75,9 +75,7 @@ HTML;
 </td>
 </tr>
 HTML;
-
 	}
-
 } else {
 	echo '<small>Não possui nenhum cadastro!</small>';
 }
@@ -93,7 +91,7 @@ HTML;
 
 
 <script type="text/javascript">
-	$(document).ready(function () {
+	$(document).ready(function() {
 		$('#tabela').DataTable({
 			"language": {
 				//"url" : '//cdn.datatables.net/plug-ins/1.13.2/i18n/pt-BR.json'
@@ -184,8 +182,8 @@ HTML;
 		listarArquivos();
 	}
 
-	
-		function selecionar(id) {
+
+	function selecionar(id) {
 
 		var ids = $('#ids').val();
 
@@ -205,26 +203,25 @@ HTML;
 		}
 	}
 
-
-
-	function deletarSel() {
+	function deletarSel(id) {
 		//$('#mensagem-excluir').text('Excluindo...')
 
-
 		$('body').removeClass('timer-alert');
-		swal({
+		Swal.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			type: "error",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonClass: "btn btn-danger",
+			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
+			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			closeOnConfirm: true
+			cancelButtonText: "Cancel",
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
 
-		},
-			function () {
 
-				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+
 
 				var ids = $('#ids').val();
 				var id = ids.split("-");
@@ -234,15 +231,23 @@ HTML;
 				}
 
 				setTimeout(() => {
-                    excluido();
-                    listar();
-                }, 1000);
+					// Ação de exclusão aqui
+					Swal.fire({
+						title: 'Excluido com Sucesso!',
+						text: 'Fecharei em 1 segundo.',
+						icon: "success",
+						timer: 1000
+					})
+
+					listar();
+				}, 1000);
 
 				limparCampos();
 
 
+			}
+		});
 
-			});
 
-	}
+	};
 </script>

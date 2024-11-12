@@ -150,7 +150,7 @@ HTML;
 		$pgto_dinheiro = $res2[0]['id'];
 
 		//buscar total movimentado pelo caixa
-//totalizar recebimentos
+		//totalizar recebimentos
 		$total_recebido = 0;
 		$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$pgto_dinheiro' and caixa = '$id'");
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
@@ -243,7 +243,6 @@ HTML;
 			</tr> 
 
 HTML;
-
 	}
 
 	echo <<<HTML
@@ -266,12 +265,7 @@ HTML;
 
 
 <script type="text/javascript">
-
-
-
-
-
-	$(document).ready(function () {
+	$(document).ready(function() {
 		$('#tabela').DataTable({
 			"ordering": false,
 			"stateSave": true,
@@ -317,7 +311,7 @@ HTML;
 		$('#valor_abertura_fechar').val(valor_abertura);
 		$('#total_caixa_fechar').val(numeroFormatado);
 
-		
+
 
 		$('#tituloModalFechar').text('Fechar Caixa');
 		$('#modalFechar').modal('show');
@@ -365,7 +359,7 @@ HTML;
 
 
 
-		function selecionar(id) {
+	function selecionar(id) {
 
 		var ids = $('#ids').val();
 
@@ -386,26 +380,25 @@ HTML;
 		}
 	}
 
-
-
-	function deletarSel() {
+	function deletarSel(id) {
 		//$('#mensagem-excluir').text('Excluindo...')
 
-
 		$('body').removeClass('timer-alert');
-		swal({
+		Swal.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			type: "error",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonClass: "btn btn-danger",
+			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
+			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			closeOnConfirm: true
+			cancelButtonText: "Cancel",
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
 
-		},
-			function () {
 
-				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+
 
 				var ids = $('#ids').val();
 				var id = ids.split("-");
@@ -415,15 +408,23 @@ HTML;
 				}
 
 				setTimeout(() => {
-                    excluido();
-                    listar();
-                }, 1000);
+					// Ação de exclusão aqui
+					Swal.fire({
+						title: 'Excluido com Sucesso!',
+						text: 'Fecharei em 1 segundo.',
+						icon: "success",
+						timer: 1000
+					})
+
+					listar();
+				}, 1000);
 
 				limparCampos();
 
 
+			}
+		});
 
-			});
 
-	}
+	};
 </script>
