@@ -197,7 +197,7 @@ if (@$fornecedores == 'ocultar') {
 							class="fa-solid fa-check ms-2"></i>
 						</button>
 
-						<button class="btn btn-primary" type="button" id="btn_carregando">
+						<button class="btn btn-primary" type="button" id="btn_carregando" style="display: none;">
 						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...
 					</button>
 				</div>

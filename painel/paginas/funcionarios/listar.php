@@ -16,7 +16,7 @@ if ($linhas > 0) {
 	<th>Telefone</th>	
 	<th>Email</th>	
 	<th>Nível</th>	
-	<th>Foto</th>	
+	<th class="text-center">Foto</th>	
 	<th>Ações</th>
 	</tr> 
 	</thead> 
@@ -82,7 +82,7 @@ HTML;
 <td style="color:{$classe_ativo}">{$telefone}</td>
 <td style="color:{$classe_ativo}">{$email}</td>
 <td><span class="badge font-weight-semibold {$cor_adm} tx-12" style="width:90%;">{$nivel}</span></td>
-<td style="color:{$classe_ativo}"><img onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}')" src="images/perfil/{$foto}" class="hovv" width="25px"></td>
+<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}')" src="images/perfil/{$foto}" class="hovv" width="25px"></td>
 <td>
 	<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}', '{$foto}')" title="Editar Dados"><i class="fa fa-edit "></i></a>
 

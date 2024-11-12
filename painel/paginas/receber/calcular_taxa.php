@@ -12,4 +12,3 @@ $taxa = $res[0]['taxa'];
 $taxa_conta = $taxa * $valor / 100;
 
 echo $taxa_conta;
-?>

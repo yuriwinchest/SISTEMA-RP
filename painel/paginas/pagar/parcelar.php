@@ -110,7 +110,11 @@ for ($i = 1; $i <= $qtd_parcelas; $i++) {
 		$novo_valorF = @number_format($novo_valor, 2, ',', '.');
 
 		$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_sistema);
-		$mensagem_whatsapp = '💰 *' . $nome_sistema . '*%0A';
+
+
+		$mensagem_whatsapp = '*Lembrete Automático de Vencimento!* 🤖 %0A%0A';
+
+		$mensagem_whatsapp .= '💰 *' . $nome_sistema . '*%0A';
 		$mensagem_whatsapp .= '_Conta Vencendo Hoje_ %0A';
 		$mensagem_whatsapp .= '*Descrição:* ' . $descricao . ' %0A';
 		$mensagem_whatsapp .= '*Valor:* ' . $novo_valorF . ' %0A';
@@ -128,5 +132,3 @@ $pdo->query("DELETE from $tabela where id = '$id'");
 
 echo 'Parcelado com Sucesso';
 
-
-?>

@@ -6,7 +6,6 @@ $id_usuario = @$_SESSION['id'];
 require_once("../../conexao.php");
 
 
-
 $dataInicial = $_POST['dataInicial'];
 $dataFinal = $_POST['dataFinal'];
 $pago = $_POST['pago'];

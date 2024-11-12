@@ -18,7 +18,7 @@ echo <<<HTML
 	<th>Telefone</th>	
 	<th>Email</th>	
 	<th width="10%">Nível</th>	
-	<th>Foto</th>	
+	<th class="text-center">Foto</th>	
 	<th>Ações</th>
 	</tr> 
 	</thead> 
@@ -89,7 +89,8 @@ echo <<<HTML
 <td style="color:{$classe_ativo}">{$telefone}</td>
 <td style="color:{$classe_ativo}">{$email}</td>
 <td><span class="badge font-weight-semibold {$cor_adm} tx-12" style="width:100%;">{$nivel}</span></td>
-<td style="color:{$classe_ativo}"><img onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" class="hovv" src="images/perfil/{$foto}" width="25px"></td>
+
+<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" class="hovv" src="images/perfil/{$foto}" width="25px"></td>
 <td>
 	<big><a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$mostrar_registros}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nasc}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}', '{$foto}')" title="Editar Dados"><i class="fa fa-edit "></i></a></big>
 

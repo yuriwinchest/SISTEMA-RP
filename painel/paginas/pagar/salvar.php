@@ -18,10 +18,16 @@ $id = $_POST['id'];
 $quant_recorrencia = @$_POST['quant_recorrencia'];
 $recorrencia_inf = @$_POST['recorrencia_inf'];
 
+if ($valor == "0,00") {
+	echo 'Você precisa Adicionar um Valor!';
+	exit();
+}
 
 
 $valor = str_replace('.', '', $valor);
 $valor = str_replace(',', '.', $valor);
+
+
 
 $valorF = @number_format($valor, 2, ',', '.');
 

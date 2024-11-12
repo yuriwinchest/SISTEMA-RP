@@ -18,7 +18,6 @@ $query = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and da
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
-	
 } else {
 	if ($abertura_caixa == 'Sim' and $nome_usuario != 'Administrador') {
 		echo '<script>alert("Não possui caixa Aberto, abra o caixa!")</script>';
@@ -31,8 +30,8 @@ if ($linhas > 0) {
 
 <div class="justify-content-between">
 	<form action="rel/pagar_class.php" target="_blank" method="POST">
-		<div class="left-content mt-2 mb-3">
-			<a style="margin-bottom: 10px; margin-top: 5px" class="btn ripple btn-primary text-white" onclick="inserir()"
+		<div class="left-content mt-2">
+			<a style="margin-bottom: 20px; margin-top: 20px" class="btn ripple btn-primary text-white" onclick="inserir()"
 				type="button"><i class="fe fe-plus me-2"></i>Adicionar Conta</a>
 
 
@@ -127,7 +126,6 @@ if ($linhas > 0) {
 				</div>
 
 
-				<?php if (@$_SESSION['nivel'] == 'Administrador') { ?>
 
 					<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 						<a href="#" onclick=" $('#tipo_data_filtro').val('Recebidas'); $('#pago').val('Sim'); buscar();">
@@ -157,7 +155,6 @@ if ($linhas > 0) {
 							</div>
 						</a>
 					</div>
-				<?php } ?>
 
 				<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 					<a class="text-white" href="#" onclick="$('#tipo_data_filtro').val('Pedentes'); $('#pago').val(''); buscar();">
@@ -173,14 +170,7 @@ if ($linhas > 0) {
 					</a>
 				</div>
 
-
-
 			</div>
-
-
-
-
-
 
 		</div>
 
@@ -222,15 +212,14 @@ if ($linhas > 0) {
 
 
 					<div class="row">
-						<div class="col-md-4 mb-2 col-8">
+						<div class="col-md-4 mb-2 col-8 needs-validation was-validated">
 							<label>Descrição</label>
 							<input type="text" class="form-control" id="descricao" name="descricao" placeholder="Descrição">
 						</div>
 
-						<div class="col-md-2 col-4 needs-validation was-validated">
+						<div class="col-md-2 col-4">
 							<label>Valor</label>
-							<input type="text" onkeyup="mascara_moeda('valor')" class="form-control" id="valor" name="valor"
-								placeholder="Valor" required>
+							<input type="text" oninput="formatarMoeda(this)" class="form-control" id="valor" name="valor" placeholder="Valor" value="0,00" required>
 						</div>
 
 						<div class="col-md-6 mb-2">
@@ -658,7 +647,7 @@ if ($linhas > 0) {
 						<div class="col-md-6">
 							<div class="mb-3">
 								<label>Valor <small class="text-muted">(Total ou Parcial)</small></label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-baixar" id="valor-baixar"
+								<input onkeyup="mascara_moeda('valor-baixar'); totalizar()" type="text" class="form-control" name="valor-baixar" id="valor-baixar"
 									required>
 							</div>
 						</div>
@@ -693,7 +682,7 @@ if ($linhas > 0) {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Multa em R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-multa" id="valor-multa"
+								<input onkeyup="mascara_moeda('valor-multa'); totalizar()" type="text" class="form-control" name="valor-multa" id="valor-multa"
 									placeholder="Ex 15.00" value="0">
 							</div>
 						</div>
@@ -701,7 +690,7 @@ if ($linhas > 0) {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Júros em R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-juros" id="valor-juros"
+								<input onkeyup="mascara_moeda('valor-juros'); totalizar()" type="text" class="form-control" name="valor-juros" id="valor-juros"
 									placeholder="Ex 0.15" value="0">
 							</div>
 						</div>
@@ -709,7 +698,7 @@ if ($linhas > 0) {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Desconto R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-desconto" id="valor-desconto"
+								<input onkeyup="mascara_moeda('valor-desconto'); totalizar()" type="text" class="form-control" name="valor-desconto" id="valor-desconto"
 									placeholder="Ex 15.00" value="0">
 							</div>
 						</div>
@@ -978,6 +967,7 @@ if ($linhas > 0) {
 		taxa = $('#valor-taxa').val();
 
 		valor = valor.replace(",", ".");
+		valor = valor.replace(/\.(?=.*\.)/g, "");
 		desconto = desconto.replace(",", ".");
 		juros = juros.replace(",", ".");
 		multa = multa.replace(",", ".");
@@ -1006,15 +996,20 @@ if ($linhas > 0) {
 		subtotal = parseFloat(valor) + parseFloat(juros) + parseFloat(taxa) + parseFloat(multa) - parseFloat(desconto);
 
 
-		console.log(subtotal)
+		const valorFormatado = formatarParaReal(subtotal);
 
-		$('#subtotal').val(subtotal);
+
+		$('#subtotal').val(valorFormatado);
+
 
 	}
 
 	function calcularTaxa() {
 		pgto = $('#saida-baixar').val();
 		valor = $('#valor-baixar').val();
+
+		valor = valor.replace(",", ".");
+
 		$.ajax({
 			url: 'paginas/' + pag + "/calcular_taxa.php",
 			method: 'POST',

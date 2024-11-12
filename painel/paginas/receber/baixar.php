@@ -5,6 +5,7 @@ require_once("../../../conexao.php");
 $id_usuario = $_SESSION['id'];
 
 
+
 $hora = date('H');
 
 ########## SAUDAÇÃO #############
@@ -46,6 +47,7 @@ $valor_padrao = $valor;
 
 $subtotal = $_POST['subtotal'];
 $subtotal = str_replace(',', '.', $subtotal);
+
 
 $saida = $_POST['saida-baixar'];
 $data_baixar = $_POST['data-baixar'];

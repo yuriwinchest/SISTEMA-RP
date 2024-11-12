@@ -29,8 +29,8 @@ if ($linhas > 0) {
 
 <div class="justify-content-between">
 	<form action="rel/receber_class.php" target="_blank" method="POST">
-		<div class="left-content mt-2 mb-3">
-			<a style="margin-bottom: 10px; margin-top: 5px" class="btn ripple btn-primary text-white" onclick="inserir()"
+		<div class="left-content mt-2">
+			<a style="margin-bottom: 20px; margin-top: 20px" class="btn ripple btn-primary text-white" onclick="inserir()"
 				type="button"><i class="fe fe-plus me-2"></i>Adicionar Conta</a>
 
 
@@ -126,8 +126,6 @@ if ($linhas > 0) {
 			</div>
 
 
-			<?php if (@$_SESSION['nivel'] == 'Administrador') { ?>
-
 				<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 					<a href="#" onclick=" $('#tipo_data_filtro').val('Recebidas'); $('#pago').val('Sim'); buscar();">
 						<div class="card-header" style="background: #2b7a00">
@@ -156,7 +154,6 @@ if ($linhas > 0) {
 						</div>
 					</a>
 				</div>
-			<?php } ?>
 
 			<div class="card text-center mb-5" style="width: 100%; margin-right: 10px; border-radius: 10px; height:90px">
 				<a class="text-white" href="#" onclick="$('#tipo_data_filtro').val('Pedentes'); $('#pago').val(''); buscar();">
@@ -220,7 +217,7 @@ if ($linhas > 0) {
 
 						<div class="col-md-2 col-4 needs-validation was-validated">
 							<label>Valor</label>
-							<input type="text" onkeyup="mascara_moeda('valor')" class="form-control" id="valor" name="valor"
+							<input type="text" oninput="formatarMoeda(this)" class="form-control" id="valor" name="valor"
 								placeholder="R$ 0,00" required>
 						</div>
 

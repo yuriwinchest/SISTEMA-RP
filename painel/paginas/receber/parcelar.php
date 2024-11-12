@@ -67,8 +67,6 @@ if ($usuario_pgto == "") {
 
 
 
-
-
 for ($i = 1; $i <= $qtd_parcelas; $i++) {
 
 	$nova_descricao = $descricao . ' - Parcela ' . $i;

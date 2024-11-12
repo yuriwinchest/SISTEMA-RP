@@ -31,6 +31,10 @@ $obs = $_POST['obs'];
 $id = $_POST['id'];
 $quant_recorrencia = @$_POST['quant_recorrencia'];
 
+if ($valor == "0,00") {
+	echo 'Você precisa Adicionar um Valor!';
+	exit();
+}
 
 
 
@@ -171,7 +175,6 @@ if (@count($res1) > 0) {
 } else {
 	$id_caixa = 0;
 }
-//  , caixa = '$id_caixa'
 
 
 if ($id == "") {
@@ -466,4 +469,3 @@ if ($quant_recorrencia > 0) {
 
 
 echo 'Salvo com Sucesso';
-?>

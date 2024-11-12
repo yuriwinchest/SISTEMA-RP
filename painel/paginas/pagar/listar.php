@@ -31,7 +31,6 @@ if ($mes_atual == '04' || $mes_atual == '06' || $mes_atual == '07' || $mes_atual
 	} else {
 		$data_final_mes = $ano_atual . '-' . $mes_atual . '-28';
 	}
-
 } else {
 	$data_final_mes = $ano_atual . '-' . $mes_atual . '-31';
 }
@@ -196,12 +195,11 @@ if ($linhas > 0) {
 	<tr>
 	<th align="center" width="5%" class="text-center">Selecionar</th>
 	<th>Descrição</th>
-	<th class="">Valor</th>
-	<th class="esc">Pessoa</th>
-	<th class="esc">Vencimento</th>
-	<th class="esc">Pagamento</th>
-	
-	<th class="esc">Arquivo</th>
+	<th>Valor</th>
+	<th>Pessoa</th>
+	<th>Vencimento</th>
+	<th>Pagamento</th>
+	<th class="text-center">Arquivo</th>
 	<th>Ações</th>
 	</tr>
 	</thead>
@@ -249,7 +247,7 @@ HTML;
 		$descontoF = @number_format($desconto, 2, ',', '.');
 		$taxaF = @number_format($taxa, 2, ',', '.');
 		$subtotalF = @number_format($subtotal, 2, ',', '.');
-		
+
 
 		if ($pago == "Sim") {
 			$valor_finalF = @number_format($subtotal, 2, ',', '.');
@@ -410,9 +408,7 @@ HTML;
 				$tipo_pessoa = 'Funcionário';
 			}
 
-			
 
-			
 
 			//nome pessoa
 			$query2 = $pdo->query("SELECT * FROM $tab where id = '$id_pessoa'");
@@ -422,14 +418,11 @@ HTML;
 				$nome_pessoa = $res2[0]['nome'];
 				$telefone_pessoa = $res2[0]['telefone'];
 				$pix_pessoa = $res2[0]['pix'];
-
 			} else {
 				$nome_pessoa = '';
 				$telefone_pessoa = '';
 				$pix_pessoa = '';
 			}
-
-
 		}
 
 		if ($telefone_pessoa == '') {
@@ -445,7 +438,6 @@ HTML;
 		$classe_rec = '';
 		if ($quant_recorrencia > 0 or $recorrencia_inf == 'Sim') {
 			$classe_rec = '<small><span style="color:blue">(Recorrência Múltipla)</span></small>';
-
 		}
 
 		$ocultar_rec = 'ocultar';
@@ -453,7 +445,10 @@ HTML;
 			if ($pago != 'Sim') {
 				$ocultar_rec = '';
 			}
+		}
 
+		if ($valor_finalF < $subtotal) {
+			$valor_finalF = $subtotal;
 		}
 
 
@@ -467,15 +462,15 @@ HTML;
 </td>
 <td><i class="fa fa-square {$classe_pago} mr-1"></i> {$descricao} {$classe_rec}</td>
 <td class="">R$ {$valor_finalF} <small><a href="#" onclick="mostrarResiduos('{$id}')" class="text-danger" title="Ver Resíduos">{$vlr_antigo_conta}</a></small></td>	
-<td class="esc">{$nome_pessoa}</td>
+<td>{$nome_pessoa}</td>
 <td class="esc {$classe_venc}">{$vencimentoF}</td>
-<td class="esc">{$data_pgtoF}</td>
-<td class="esc"><a href="images/contas/{$arquivo}" target="_blank"><img src="images/contas/{$tumb_arquivo}" width="25px"></a></td>
+<td>{$data_pgtoF}</td>
+<td class="text-center"><a href="images/contas/{$arquivo}" target="_blank"><img  width="30px" height="30px" class="rounded-circle" src="images/contas/{$tumb_arquivo}" width="25px"></a></td>
 <td>
 
 
 
-	<big><a href="#" onclick="editar('{$id}','{$descricao}','{$valor}','{$fornecedor}','{$funcionario}','{$vencimento}','{$data_pgto}','{$forma_pgto}','{$frequencia}','{$obs}','{$tumb_arquivo}','{$quant_recorrencia}','{$recorrencia_inf}')" title="Editar Dados"><i class="fa fa-edit text-primary text-info"></i></a></big>
+	<big><a class="icones_mobile {$ocultar}" href="#" onclick="editar('{$id}','{$descricao}','{$valor}','{$fornecedor}','{$funcionario}','{$vencimento}','{$data_pgto}','{$forma_pgto}','{$frequencia}','{$obs}','{$tumb_arquivo}','{$quant_recorrencia}','{$recorrencia_inf}')" title="Editar Dados"><i class="fa fa-edit text-primary text-info"></i></a></big>
 
 	<big><a href="#" onclick="excluirConta('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
 
@@ -501,7 +496,6 @@ HTML;
 </td>
 </tr>
 HTML;
-
 	}
 
 
@@ -514,20 +508,12 @@ HTML;
 </small>
 <br>
 
-			<span class="ocultar_mobile" style="font-size: 13px; border:1px solid #6092a8; padding:5px; ">
-				Filtrar Por:  
-				<a href="#" onclick="tipoData('vencimento')">Vencimento</a> / 
-				<a href="#" onclick="tipoData('data_pgto')">Pagamento</a> /
-				<a href="#" onclick="tipoData('data_lanc')">Lançamento</a> 
-			</span>
-
 			<p align="right" style="margin-top: -10px">
 				<span style="margin-right: 10px">Total Pendentes  <span style="color:red">R$ {$total_pendentesF} </span></span>
 				<span>Total Pago  <span style="color:green">R$ {$total_pagoF} </span></span>
 			</p>
 
 HTML;
-
 } else {
 	echo '<small>Nenhum Registro Encontrado!</small>';
 }
@@ -536,7 +522,7 @@ HTML;
 
 
 <script type="text/javascript">
-	$(document).ready(function () {
+	$(document).ready(function() {
 		$('#tabela').DataTable({
 			"language": {
 				//"url" : '//cdn.datatables.net/plug-ins/1.13.2/i18n/pt-BR.json'
@@ -637,7 +623,7 @@ HTML;
 	function limparCampos() {
 		$('#id').val('');
 		$('#descricao').val('');
-		$('#valor').val('');
+		$('#valor').val('0,00');
 		$('#vencimento').val("<?= $data_atual ?>");
 		$('#data_pgto').val('');
 		$('#obs').val('');
@@ -668,10 +654,12 @@ HTML;
 			$.ajax({
 				url: 'paginas/' + pag + "/baixar_multiplas.php",
 				method: 'POST',
-				data: { novo_id },
+				data: {
+					novo_id
+				},
 				dataType: "html",
 
-				success: function (result) {
+				success: function(result) {
 					//alert(result)
 
 				}
@@ -715,11 +703,16 @@ HTML;
 		$('#saida-baixar').val(pgto).change();
 		$('#subtotal').val(valor);
 
+		mascara_moeda('valor-baixar');
+
 
 		$('#valor-juros').val(juros);
 		$('#valor-desconto').val('');
 		$('#valor-multa').val(multa);
 		$('#valor-taxa').val(taxa);
+
+		mascara_moeda('valor-juros');
+		mascara_moeda('valor-multa');
 
 		totalizar()
 
@@ -733,10 +726,12 @@ HTML;
 		$.ajax({
 			url: 'paginas/' + pag + "/listar-residuos.php",
 			method: 'POST',
-			data: { id },
+			data: {
+				id
+			},
 			dataType: "html",
 
-			success: function (result) {
+			success: function(result) {
 				$("#listar-residuos").html(result);
 			}
 		});
@@ -753,28 +748,26 @@ HTML;
 		$('#arquivo_conta').val('');
 		listarArquivos();
 	}
-
 </script>
 
 
 <script type="text/javascript">
-
 	function excluirConta(id) {
 		//$('#mensagem-excluir').text('Excluindo...')
 
 
 		$('body').removeClass('timer-alert');
 		swal({
-			title: "Tem certeza?",
-			text: "Você não conseguirá recuperar esse arquivo novamente!",
-			type: "error",
-			showCancelButton: true,
-			confirmButtonClass: "btn btn-danger",
-			confirmButtonText: "Sim, Deletar!",
-			closeOnConfirm: true
+				title: "Tem certeza?",
+				text: "Você não conseguirá recuperar esse arquivo novamente!",
+				type: "error",
+				showCancelButton: true,
+				confirmButtonClass: "btn btn-danger",
+				confirmButtonText: "Sim, Deletar!",
+				closeOnConfirm: true
 
-		},
-			function () {
+			},
+			function() {
 
 				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
 
@@ -782,10 +775,12 @@ HTML;
 				$.ajax({
 					url: 'paginas/' + pag + "/excluir.php",
 					method: 'POST',
-					data: { id },
+					data: {
+						id
+					},
 					dataType: "html",
 
-					success: function (mensagem) {
+					success: function(mensagem) {
 						if (mensagem.trim() == "Excluído com Sucesso") {
 							excluido();
 							buscar();
@@ -800,7 +795,7 @@ HTML;
 	}
 
 
-	
+
 
 	function cancelarRec(id) {
 		//$('#mensagem-excluir').text('Excluindo...')
@@ -808,16 +803,16 @@ HTML;
 
 		$('body').removeClass('timer-alert');
 		swal({
-			title: "Deseja Cancelar as Recorrências?",
-			text: "Você não conseguirá recuperá-lo novamente!",
-			type: "error",
-			showCancelButton: true,
-			confirmButtonClass: "btn btn-danger",
-			confirmButtonText: "Sim, Excluir!",
-			closeOnConfirm: true
+				title: "Deseja Cancelar as Recorrências?",
+				text: "Você não conseguirá recuperá-lo novamente!",
+				type: "error",
+				showCancelButton: true,
+				confirmButtonClass: "btn btn-danger",
+				confirmButtonText: "Sim, Excluir!",
+				closeOnConfirm: true
 
-		},
-			function () {
+			},
+			function() {
 
 				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
 
@@ -825,10 +820,12 @@ HTML;
 				$.ajax({
 					url: 'paginas/' + pag + "/cancelar_recorrencia.php",
 					method: 'POST',
-					data: { id },
+					data: {
+						id
+					},
 					dataType: "html",
 
-					success: function (mensagem) {
+					success: function(mensagem) {
 						if (mensagem.trim() == "Cancelado com Sucesso") {
 
 
@@ -846,7 +843,7 @@ HTML;
 	}
 
 
-	
+
 	function selecionar(id) {
 
 		var ids = $('#ids').val();
@@ -870,41 +867,40 @@ HTML;
 	}
 
 
-function deletarSel(){
-    //$('#mensagem-excluir').text('Excluindo...')
+	function deletarSel() {
+		//$('#mensagem-excluir').text('Excluindo...')
 
 
-    $('body').removeClass('timer-alert');
+		$('body').removeClass('timer-alert');
 		swal({
-		  title: "Deseja Excluir?",
-		  text: "Você não conseguirá recuperá-lo novamente!",
-		  type: "error",
-		  showCancelButton: true,
-		  confirmButtonClass: "btn btn-danger",
-		  confirmButtonText: "Sim, Excluir!",
-		  closeOnConfirm: true
-			
-		},
-		function(){
-			
-		  //swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+				title: "Deseja Excluir?",
+				text: "Você não conseguirá recuperá-lo novamente!",
+				type: "error",
+				showCancelButton: true,
+				confirmButtonClass: "btn btn-danger",
+				confirmButtonText: "Sim, Excluir!",
+				closeOnConfirm: true
+
+			},
+			function() {
+
+				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
 
 
-                var ids = $('#ids').val();
-                var id = ids.split("-");
+				var ids = $('#ids').val();
+				var id = ids.split("-");
 
-                for (i = 0; i < id.length - 1; i++) {
-                    excluirMultiplos(id[i]);
-                }
+				for (i = 0; i < id.length - 1; i++) {
+					excluirMultiplos(id[i]);
+				}
 
-                setTimeout(() => {
-                    excluido();
-                    buscar();
-                }, 1000);
+				setTimeout(() => {
+					excluido();
+					buscar();
+				}, 1000);
 
-                limparCampos();
-		});
+				limparCampos();
+			});
 
-}
-	
+	}
 </script>

@@ -59,6 +59,7 @@ if ($linhas > 0) {
 	$cidade_usuario = $res[0]['cidade'];
 	$estado_usuario = $res[0]['estado'];
 	$cep_usuario = $res[0]['cep'];
+	$complemento_usuario = $res[0]['complemento'];
 } else {
 	echo '<script>window.location="../"</script>';
 	exit();
@@ -113,6 +114,14 @@ if (@count($res1) > 0) {
 
 
 	<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+
+	<!-- SweetAlert CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+	<!-- SweetAlert JS -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	
 
 </head>
 
@@ -754,16 +763,30 @@ if (@count($res1) > 0) {
 					<div class="row">
 
 						<div class="col-md-4 mb-2">
+							<label>Complemento</label>
+							<input type="text" class="form-control" id="complemento_perfil" name="complemento" placeholder="Bloco A AP 150" value="<?php echo @$complemento_usuario ?>">
+						</div>
+
+						<div class="col-md-4 mb-2">
 							<label>Bairro</label>
 							<input type="text" class="form-control" id="bairro_perfil" name="bairro" placeholder="Bairro"
 								value="<?php echo @$bairro_usuario ?>">
 						</div>
 
-						<div class="col-md-5 mb-2">
+						<div class="col-md-4 mb-2">
 							<label>Cidade</label>
 							<input type="text" class="form-control" id="cidade_perfil" name="cidade" placeholder="Cidade"
 								value="<?php echo @$cidade_usuario ?>">
 						</div>
+
+
+
+
+					</div>
+
+
+
+					<div class="row">
 
 						<div class="col-md-3 mb-2">
 							<label>Estado</label>
@@ -801,19 +824,13 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 
-
-					</div>
-
-
-
-					<div class="row">
-						<div class="col-md-8 mb-3">
+						<div class="col-md-5 mb-3">
 							<label>Foto</label>
 							<input type="file" class="form-control" id="foto_perfil" name="foto" value="<?php echo @$foto_usuario ?>"
 								onchange="carregarImgPerfil()">
 						</div>
 
-						<div class="col-md-4 mb-3">
+						<div class="col-md-3 mb-3">
 							<img src="images/perfil/<?php echo $foto_usuario ?>" width="80px" id="target-usu">
 
 						</div>
@@ -831,7 +848,10 @@ if (@count($res1) > 0) {
 					</small>
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary">Salvar</button>
+					<button type="submit" class="btn btn-primary" id="btn_salvar_perfil">Salvar</button>
+					<button class="btn btn-primary" type="button" id="btn_carregando_peril" style="display: none">
+						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...
+					</button>
 				</div>
 			</form>
 		</div>
@@ -1161,7 +1181,10 @@ if (@count($res1) > 0) {
 					</small>
 				</div>
 				<div class="modal-footer">
-					<button type="submit" class="btn btn-primary">Salvar</button>
+					<button type="submit" class="btn btn-primary" id="btn_salvar_config">Salvar</button>
+					<button class="btn btn-primary" type="button" id="btn_carregando_config" style="display: none">
+						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...
+					</button>
 				</div>
 			</form>
 		</div>
@@ -1444,6 +1467,10 @@ if (@count($res1) > 0) {
 <!-- SweetAlert JS -->
 <script src="js/sweetalert2.all.min.js"></script>
 <script src="js/sweetalert1.min.css"></script>
+
+
+
+
 <script src="js/alertas.js"></script>
 
 <!-- Alertas -->
@@ -1517,7 +1544,7 @@ if (@count($res1) > 0) {
 		});
 
 
-
+		$('#cep_perfil').mask('00000-000');
 
 
 	});
@@ -1564,6 +1591,9 @@ if (@count($res1) > 0) {
 		event.preventDefault();
 		var formData = new FormData(this);
 
+		$('#btn_salvar_perfil').hide();
+		$('#btn_carregando_perfil').show();
+
 		$.ajax({
 			url: "editar-perfil.php",
 			type: 'POST',
@@ -1573,7 +1603,7 @@ if (@count($res1) > 0) {
 				$('#msg-perfil').text('');
 				$('#msg-perfil').removeClass()
 				if (mensagem.trim() == "Editado com Sucesso") {
-
+					sucesso();
 					$('#btn-fechar-perfil').click();
 					location.reload();
 
@@ -1583,6 +1613,9 @@ if (@count($res1) > 0) {
 					$('#msg-perfil').addClass('text-danger')
 					$('#msg-perfil').text(mensagem)
 				}
+
+				$('#btn_salvar_perfil').show();
+				$('#btn_carregando_perfil').hide();
 
 
 			},
@@ -1607,6 +1640,9 @@ if (@count($res1) > 0) {
 		event.preventDefault();
 		var formData = new FormData(this);
 
+		$('#btn_salvar_config').hide();
+		$('#btn_carregando_config').show();
+
 		$.ajax({
 			url: "editar-config.php",
 			type: 'POST',
@@ -1616,7 +1652,7 @@ if (@count($res1) > 0) {
 				$('#msg-config').text('');
 				$('#msg-config').removeClass()
 				if (mensagem.trim() == "Editado com Sucesso") {
-
+					sucesso();
 					$('#btn-fechar-config').click();
 					location.reload();
 
@@ -1626,6 +1662,9 @@ if (@count($res1) > 0) {
 					$('#msg-config').addClass('text-danger')
 					$('#msg-config').text(mensagem)
 				}
+
+				$('#btn_salvar_config').show();
+				$('#btn_carregando_config').hide();
 
 
 			},

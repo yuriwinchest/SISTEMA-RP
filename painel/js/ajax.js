@@ -1,24 +1,24 @@
-$(document).ready(function() { 
+$(document).ready(function () {
     $('#btn_carregando').hide();
-    $('#listar').text("Carregando Dados...");   
-    listar();    
-} );
+    $('#listar').text("Carregando Dados...");
+    listar();
+});
 
-function listar(p1, p2, p3, p4, p5, p6){
+function listar(p1, p2, p3, p4, p5, p6) {
     $.ajax({
         url: 'paginas/' + pag + "/listar.php",
         method: 'POST',
-        data: {p1, p2, p3, p4, p5, p6},
+        data: { p1, p2, p3, p4, p5, p6 },
         dataType: "html",
 
-        success:function(result){
+        success: function (result) {
             $("#listar").html(result);
             $('#mensagem-excluir').text('');
         }
     });
 }
 
-function inserir(){    
+function inserir() {
     $('#mensagem').text('');
     $('#titulo_inserir').text('Inserir Registro');
     $('#modalForm').modal('show');
@@ -52,7 +52,7 @@ $("#form").submit(function () {
                 sucesso();
                 listar();
 
-                $('#mensagem').text('')          
+                $('#mensagem').text('')
 
             } else {
 
@@ -75,62 +75,62 @@ $("#form").submit(function () {
 
 
 
-
-function excluir(id){
-    $('#mensagem-excluir').text('Excluindo...')
+function excluir(id) {
+    //$('#mensagem-excluir').text('Excluindo...')
 
 
     $('body').removeClass('timer-alert');
-		swal({
-		  title: "Deseja Excluir?",
-		  text: "Você não conseguirá recuperá-lo novamente!",
-		  type: "error",
-		  showCancelButton: true,
-		  confirmButtonClass: "btn btn-danger",
-		  confirmButtonText: "Sim, Excluir!",
-		  closeOnConfirm: true
-			
-		},
-		function(){
-			
-		  //swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
+    swal({
+        title: "Deseja Excluir?",
+        text: "Você não conseguirá recuperá-lo novamente!",
+        type: "warning",
+         showCancelButton: true,
+        confirmButtonText: "Sim, Excluir!",
+        cancelButtonText: "Não, cancel!",
+        reverseButtons: true
+
+    },
+        function () {
+
+            //swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
 
 
-           $.ajax({
-        url: 'paginas/' + pag + "/excluir.php",
-        method: 'POST',
-        data: {id},
-        dataType: "html",
+            $.ajax({
+                url: 'paginas/' + pag + "/excluir.php",
+                method: 'POST',
+                data: { id },
+                dataType: "html",
 
-        success:function(mensagem){
-            if (mensagem.trim() == "Excluído com Sucesso") {
-                excluido();              
-                listar();
-                limparCampos()
-            } else {
-                $('#mensagem-excluir').addClass('text-danger')
-                $('#mensagem-excluir').text(mensagem)
-            }
-        }
-    });
-		});
+                success: function (mensagem) {
+                    if (mensagem.trim() == "Excluído com Sucesso") {
+                        excluido();
+                        listar();
+                        limparCampos();
+                        
+                    } else {
+                        $('#mensagem-excluir').addClass('text-danger')
+                        $('#mensagem-excluir').text(mensagem)
+                    }
+                }
+            });
+        });
 
 }
 
 
 
 
-function excluirMultiplos(id){   
+function excluirMultiplos(id) {
     //$('#mensagem-excluir').text('Excluindo...')
-    
+
     $.ajax({
         url: 'paginas/' + pag + "/excluir.php",
         method: 'POST',
-        data: {id},
+        data: { id },
         dataType: "html",
 
-        success:function(mensagem){
-            if (mensagem.trim() == "Excluído com Sucesso") {                
+        success: function (mensagem) {
+            if (mensagem.trim() == "Excluído com Sucesso") {
                 //listar();
                 limparCampos()
             } else {
@@ -143,14 +143,14 @@ function excluirMultiplos(id){
 
 
 
-function ativar(id, acao){  
+function ativar(id, acao) {
     $.ajax({
         url: 'paginas/' + pag + "/mudar-status.php",
         method: 'POST',
-        data: {id, acao},
+        data: { id, acao },
         dataType: "html",
 
-        success:function(mensagem){
+        success: function (mensagem) {
             if (mensagem.trim() == "Alterado com Sucesso") {
                 listar();
             } else {
@@ -164,17 +164,34 @@ function ativar(id, acao){
 
 function mascara_moeda(valor) {
 
-    var valorAlterado = $('#'+valor).val();
+    var valorAlterado = $('#' + valor).val();
     valorAlterado = valorAlterado.replace(/\D/g, ""); // Remove todos os não dígitos
     valorAlterado = valorAlterado.replace(/(\d+)(\d{2})$/, "$1,$2"); // Adiciona a parte de centavos
     valorAlterado = valorAlterado.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); // Adiciona pontos a cada três dígitos
     valorAlterado = valorAlterado;
-    $('#'+valor).val(valorAlterado);
+    $('#' + valor).val(valorAlterado);
 }
 
 
+// FUNÇÃO PARA FORMATAR VALOR PARA REAL
+function formatarParaReal(valor) {
+    return valor.toLocaleString({
+        style: 'currency',
+        currency: 'BRL'
+    });
+}
 
 
+//FUNÇÃO PARA MOEDA
+function formatarMoeda(input) {
+    // Remove caracteres que não são dígitos
+    let valor = input.value.replace(/\D/g, '');
 
-    
-    
+    // Formata como moeda
+    valor = (valor / 100).toFixed(2).replace('.', ',');
+
+    // Adiciona o prefixo de moeda
+    input.value = valor;
+}
+
+

@@ -16,13 +16,13 @@ if (@$clientes == 'ocultar') {
 			Adicionar <?php echo ucfirst($pag); ?></a>
 
 
-<a style="position:absolute; right:40px;" href="rel/excel_clientes.php" type="button"
+		<a style="position:absolute; right:40px;" href="rel/excel_clientes.php" type="button"
 			class="btn btn-success ocultar_mobile_app" target="_blank"><span class="fa fa-file-excel-o"></span> Exportar</a>
 
-<a class="btn btn-danger" href="#" onclick="deletarSel()" title="Excluir" id="btn-deletar"
-				style="display:none"><i class="fe fe-trash-2"></i> Deletar</a>
+		<a class="btn btn-danger" href="#" onclick="deletarSel()" title="Excluir" id="btn-deletar"
+			style="display:none"><i class="fe fe-trash-2"></i> Deletar</a>
 
-		
+
 
 	</div>
 
@@ -262,7 +262,7 @@ if (@$clientes == 'ocultar') {
 											<td><span id="endereco_dados"></span></td>
 										</tr>
 
-										
+
 										<tr>
 											<td style="width: 25%" class="bg-primary text-white w_150">Número</td>
 											<td><span id="numero_dados"></span></td>
@@ -415,9 +415,9 @@ if (@$clientes == 'ocultar') {
 
 <!-- Modal Baixar-->
 <div class="modal fade" id="modalBaixar" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	<div class="modal-dialog ">
+	<div class="modal-dialog " style="box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;">
 		<div class="modal-content">
-			<div class="modal-header bg-primary text-white">
+			<div class="modal-header bg-dark text-white">
 				<h4 class="modal-title" id="tituloModal">Baixar Conta: <span id="descricao-baixar"> </span></h4>
 				<button id="btn-fechar-baixar" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span
 						class="text-white" aria-hidden="true">&times;</span></button>
@@ -429,7 +429,7 @@ if (@$clientes == 'ocultar') {
 						<div class="col-md-6">
 							<div class="mb-3">
 								<label>Valor <small class="text-muted">(Total ou Parcial)</small></label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-baixar" id="valor-baixar"
+								<input onkeyup="mascara_moeda('valor-baixar'); totalizar()" type="text" class="form-control" name="valor-baixar" id="valor-baixar"
 									required>
 							</div>
 						</div>
@@ -446,7 +446,7 @@ if (@$clientes == 'ocultar') {
 										foreach ($res[$i] as $key => $value) {
 										}
 
-										?>
+									?>
 										<option value="<?php echo $res[$i]['id'] ?>"><?php echo $res[$i]['nome'] ?></option>
 
 									<?php } ?>
@@ -464,7 +464,7 @@ if (@$clientes == 'ocultar') {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Multa em R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-multa" id="valor-multa"
+								<input onkeyup="mascara_moeda('valor-multa'); totalizar()" type="text" class="form-control" name="valor-multa" id="valor-multa"
 									placeholder="Ex 15.00" value="0">
 							</div>
 						</div>
@@ -472,7 +472,7 @@ if (@$clientes == 'ocultar') {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Júros em R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-juros" id="valor-juros"
+								<input onkeyup="mascara_moeda('valor-juros'); totalizar()" type="text" class="form-control" name="valor-juros" id="valor-juros"
 									placeholder="Ex 0.15" value="0">
 							</div>
 						</div>
@@ -480,7 +480,7 @@ if (@$clientes == 'ocultar') {
 						<div class="col-md-3">
 							<div class="mb-3">
 								<label>Desconto R$</label>
-								<input onkeyup="totalizar()" type="text" class="form-control" name="valor-desconto" id="valor-desconto"
+								<input onkeyup="mascara_moeda('valor-desconto'); totalizar()" type="text" class="form-control" name="valor-desconto" id="valor-desconto"
 									placeholder="Ex 15.00" value="0">
 							</div>
 						</div>
@@ -543,7 +543,9 @@ if (@$clientes == 'ocultar') {
 
 
 
-<script type="text/javascript">var pag = "<?= $pag ?>"</script>
+<script type="text/javascript">
+	var pag = "<?= $pag ?>"
+</script>
 <script src="js/ajax.js"></script>
 
 
@@ -566,7 +568,7 @@ if (@$clientes == 'ocultar') {
 
 
 <script type="text/javascript">
-	$("#form-arquivos").submit(function () {
+	$("#form-arquivos").submit(function() {
 		event.preventDefault();
 		var formData = new FormData(this);
 
@@ -575,7 +577,7 @@ if (@$clientes == 'ocultar') {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 				$('#mensagem-arquivo').text('');
 				$('#mensagem-arquivo').removeClass()
 				if (mensagem.trim() == "Inserido com Sucesso") {
@@ -606,15 +608,16 @@ if (@$clientes == 'ocultar') {
 		$.ajax({
 			url: 'paginas/' + pag + "/listar-arquivos.php",
 			method: 'POST',
-			data: { id },
+			data: {
+				id
+			},
 			dataType: "text",
 
-			success: function (result) {
+			success: function(result) {
 				$("#listar-arquivos").html(result);
 			}
 		});
 	}
-
 </script>
 
 
@@ -659,7 +662,7 @@ if (@$clientes == 'ocultar') {
 
 		var reader = new FileReader();
 
-		reader.onloadend = function () {
+		reader.onloadend = function() {
 			target.src = reader.result;
 		};
 
@@ -682,6 +685,7 @@ if (@$clientes == 'ocultar') {
 		taxa = $('#valor-taxa').val();
 
 		valor = valor.replace(",", ".");
+		valor = valor.replace(/\.(?=.*\.)/g, "");
 		desconto = desconto.replace(",", ".");
 		juros = juros.replace(",", ".");
 		multa = multa.replace(",", ".");
@@ -709,24 +713,32 @@ if (@$clientes == 'ocultar') {
 
 		subtotal = parseFloat(valor) + parseFloat(juros) + parseFloat(taxa) + parseFloat(multa) - parseFloat(desconto);
 
-
-		console.log(subtotal)
+		subtotal = subtotal.toFixed(2);
 
 		$('#subtotal').val(subtotal);
 
 	}
 
+
 	function calcularTaxa() {
 		pgto = $('#saida-baixar').val();
 		valor = $('#valor-baixar').val();
+
+		valor = valor.replace(",", ".");
+
 		$.ajax({
 			url: 'paginas/receber/calcular_taxa.php',
 			method: 'POST',
-			data: { valor, pgto },
+			data: {
+				valor,
+				pgto
+			},
 			dataType: "html",
 
-			success: function (result) {
+			success: function(result) {
+
 				$('#valor-taxa').val(result);
+
 				totalizar();
 			}
 		});
@@ -739,7 +751,7 @@ if (@$clientes == 'ocultar') {
 
 
 <script type="text/javascript">
-	$("#form-baixar").submit(function () {
+	$("#form-baixar").submit(function() {
 
 		$('#btn_salvar_baixar').hide();
 		$('#btn_carregando_baixar').show();
@@ -754,7 +766,7 @@ if (@$clientes == 'ocultar') {
 			type: 'POST',
 			data: formData,
 
-			success: function (mensagem) {
+			success: function(mensagem) {
 
 				$('#mensagem-baixar').text('');
 				$('#mensagem-baixar').removeClass()
@@ -786,7 +798,6 @@ if (@$clientes == 'ocultar') {
 
 
 <script>
-
 	function limpa_formulário_cep() {
 		//Limpa valores do formulário de cep.
 		document.getElementById('endereco').value = ("");
@@ -854,7 +865,6 @@ if (@$clientes == 'ocultar') {
 			limpa_formulário_cep();
 		}
 	};
-
 </script>
 
 
@@ -868,7 +878,7 @@ if (@$clientes == 'ocultar') {
 				url: 'https://www.receitaws.com.br/v1/cnpj/' + cnpj,
 				type: 'GET',
 				dataType: 'jsonp', // A API retorna um JSONP para evitar CORS
-				success: function (dados) {
+				success: function(dados) {
 					if (dados.status === "ERROR") {
 						alert("CNPJ inválido ou não encontrado!");
 					} else {
@@ -885,7 +895,7 @@ if (@$clientes == 'ocultar') {
 						$('#estado').val(dados.uf);
 					}
 				},
-				error: function () {
+				error: function() {
 					alert("Erro ao buscar os dados do CNPJ.");
 				}
 			});
