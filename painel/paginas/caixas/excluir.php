@@ -1,14 +1,15 @@
 <?php 
-
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'caixas';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $nivel_usuario = @$_SESSION['nivel'];
 
 $id = $_POST['id'];
 
-$query = $pdo->query("SELECT * FROM $tabela where valor_fechamento is not null");
+$query = $pdo->query("SELECT * FROM $tabela where valor_fechamento is not null and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 

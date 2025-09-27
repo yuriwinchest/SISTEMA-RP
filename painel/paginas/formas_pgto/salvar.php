@@ -1,5 +1,8 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 $tabela = 'formas_pgto';
 
 $id = $_POST['id'];
@@ -11,7 +14,7 @@ if($taxa == ""){
 }
 
 //validar nome
-$query = $pdo->query("SELECT * from $tabela where nome = '$nome'");
+$query = $pdo->query("SELECT * from $tabela where nome = '$nome' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res) > 0 and $id != $res[0]['id']){
 	echo 'Nome já Cadastrado, escolha outro!!';
@@ -20,7 +23,7 @@ if(@count($res) > 0 and $id != $res[0]['id']){
 
 
 if($id == ""){
-	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, taxa = '$taxa'");
+	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, taxa = '$taxa', empresa = '$id_empresa'");
 }else{
 	$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, taxa = '$taxa' WHERE id = '$id'");
 }

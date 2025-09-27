@@ -1,7 +1,13 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 require_once("../../conexao.php");
 
-$html = file_get_contents($url_sistema."painel/rel/balanco_anual.php");
+include('../buscar_config.php');
+$token_rel = "M543661";
+ob_start();
+include("balanco_anual.php");
+$html = ob_get_clean();
 
 //CARREGAR DOMPDF
 require_once '../dompdf/autoload.inc.php';

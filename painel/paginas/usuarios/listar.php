@@ -1,10 +1,14 @@
 <?php
-$tabela = 'usuarios';
-require_once("../../../conexao.php");
 @session_start();
 $id_usuario = @$_SESSION['id'];
+$id_empresa = @$_SESSION['empresa'];
 
-$query = $pdo->query("SELECT * from $tabela where id != $id_usuario and acessar_painel != 'Não' order by id desc");
+$tabela = 'usuarios';
+require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
+
+
+$query = $pdo->query("SELECT * from $tabela where id != $id_usuario and acessar_painel != 'Não' and empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
@@ -90,24 +94,24 @@ HTML;
 <td style="color:{$classe_ativo}">{$email}</td>
 <td><span class="badge font-weight-semibold {$cor_adm} tx-12" style="width:100%;">{$nivel}</span></td>
 
-<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" class="hovv" src="images/perfil/{$foto}" width="25px"></td>
+<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" class="hovv" src="../sas/images/perfil/{$foto}" width="25px"></td>
 <td>
-	<big><a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$mostrar_registros}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nasc}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}', '{$foto}')" title="Editar Dados"><i class="fa fa-edit "></i></a></big>
+<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$mostrar_registros}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nasc}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}', '{$foto}')" title="Editar Dados"><i class="fa fa-edit "></i></a>
 
 
+<a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a>
+
+<a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}','{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" title="Mostrar Dados"><i class="fa fa-eye "></i></a>
 
 
-		<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
-
-<big><a class="btn btn-primary-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}','{$foto}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$data_nascF}','{$cpf}','{$pix}','{$complemento}', '{$tipo_chave}')" title="Mostrar Dados"><i class="fa fa-info-circle "></i></a></big>
-
-
-<big><a class="btn btn-success-light btn-sm" href="#" onclick="ativar('{$id}', '{$acao}')" title="{$titulo_link}"><i class="fa {$icone} "></i></a></big>
+<a class="btn btn-success-light btn-sm" href="#" onclick="ativar('{$id}', '{$acao}')" title="{$titulo_link}"><i class="fa {$icone} "></i></a>
 
 <a class="btn btn-dark-light btn-sm" href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o " ></i></a>
 
 
-<big><a class="btn btn-primary-light btn-sm {$mostrar_adm}"  href="#" onclick="permissoes('{$id}', '{$nome}')" title="Dar Permissões"><i class="fa fa-lock "></i></a></big>
+<a href="#" class="btn btn-danger-light btn-sm" onclick="resetar('{$id}')" title="Redefinir senha para 123"><i class="fa fa-ban text-danger"></i></a>
+
+<a class="btn btn-primary-light btn-sm {$mostrar_adm}"  href="#" onclick="permissoes('{$id}', '{$nome}')" title="Dar Permissões"><i class="fa fa-lock "></i></a>
 
 </td>
 </tr>
@@ -162,7 +166,7 @@ HTML;
 		$('#pix').val(pix);
 		$('#complemento').val(complemento);
 		$('#tipo_chave').val(tipo_chave).change();
-		$('#target').attr("src", "images/perfil/" + foto);
+		$('#target').attr("src", "../sas/images/perfil/" + foto);
 
 
 		$('#modalForm').modal('show');
@@ -194,7 +198,7 @@ HTML;
 		$('#complemento_dados').text(complemento);
 
 
-		$('#foto_dados').attr("src", "images/perfil/" + foto);
+		$('#foto_dados').attr("src", "../sas/images/perfil/" + foto);
 
 
 		$('#modalDados').modal('show');
@@ -216,7 +220,7 @@ HTML;
 		$('#complemento').val('');
 		$('#tipo_chave').val('').change();
 
-		$('#target').attr("src", "images/perfil/sem-foto.jpg");
+		$('#target').attr("src", "../sas/images/perfil/sem-foto.jpg");
 
 
 		$('#ids').val('');
@@ -268,33 +272,33 @@ HTML;
 		}
 	}
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
 
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+	
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -303,16 +307,91 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
+	}
 
 
-	};
+
+
+
+// ALERT REDEFINIR SENHA #######################################
+function resetar(id) {
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+            cancelButton: "btn btn-danger me-1",
+            container: 'swal-whatsapp-container'
+        },
+        buttonsStyling: false
+    });
+
+    swalWithBootstrapButtons.fire({
+        title: "Deseja Redefinir?",
+        text: "A senha agora será 123",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sim, Redefinir!",
+        cancelButtonText: "Não, Cancelar!",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realiza a requisição AJAX para excluir o item
+            $.ajax({
+                url: 'paginas/' + pag + "/redefinir.php",
+                method: 'POST',
+                data: { id },
+                dataType: "html",
+                success: function (mensagem) {
+                    if (mensagem.trim() == "Redefinido com Sucesso") {
+                        // Exibe mensagem de sucesso após a exclusão
+                        swalWithBootstrapButtons.fire({
+                            title: mensagem,
+                            text: 'Fecharei em 1 segundo.',
+                            icon: "success",
+                            timer: 1000,
+                            timerProgressBar: true,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                             container: 'swal-whatsapp-container'
+                             }
+                        });
+                        listar();
+                        
+                    } else {
+                        // Exibe mensagem de erro se a requisição falhar
+                        swalWithBootstrapButtons.fire({
+                            title: "Opss!",
+                            text: mensagem,
+                            icon: "error",
+                            confirmButtonText: 'OK',
+                            customClass: {
+                             container: 'swal-whatsapp-container'
+                             }
+                        });
+                    }
+                }
+            });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "Fecharei em 1 segundo.",
+                icon: "error",
+                timer: 1000,
+                timerProgressBar: true,
+            });
+        }
+    });
+}
 </script>

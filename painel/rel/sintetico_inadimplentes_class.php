@@ -2,10 +2,16 @@
 @session_start();
 $mostrar_registros = @$_SESSION['registros'];
 $id_usuario = @$_SESSION['id'];
+$id_empresa = @$_SESSION['empresa'];
 
 require_once("../../conexao.php");
 
-$html = file_get_contents($url_sistema."painel/rel/sintetico_ina.php?mostrar_registros=$mostrar_registros&id_usuario=$id_usuario");
+
+include('../buscar_config.php');
+$token_rel = "M543661";
+ob_start();
+include("sintetico_ina.php");
+$html = ob_get_clean();
 
 //CARREGAR DOMPDF
 require_once '../dompdf/autoload.inc.php';

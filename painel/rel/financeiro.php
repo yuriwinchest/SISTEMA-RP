@@ -1,17 +1,10 @@
 <?php 
-
-include('../../conexao.php');
 include('data_formatada.php');
 
-$filtro_data = $_GET['filtro_data'];
-$dataInicial = $_GET['dataInicial'];
-$dataFinal = $_GET['dataFinal'];
-$filtro_tipo = $_GET['filtro_tipo'];
-$filtro_lancamento = $_GET['filtro_lancamento'];
-$filtro_pendentes = $_GET['filtro_pendentes'];
-
-$mostrar_registros = $_GET['mostrar_registros'];
-$id_usuario = $_GET['id_usuario'];
+if ($token_rel != 'M543661') {
+	echo '<script>window.location="../../"</script>';
+	exit();
+}
 
 $dataInicialF = implode('/', array_reverse(@explode('-', $dataInicial)));
 $dataFinalF = implode('/', array_reverse(@explode('-', $dataFinal)));	
@@ -112,13 +105,22 @@ body {font-family: 'Tw Cen MT', sans-serif;}
 	opacity:8%;
 }
 
+
+tr:nth-child(odd) { /* Linhas ímpares */
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(even) { /* Linhas pares */
+    background-color: #ffffff;
+}
+
 </style>
 
 </head>
 <body>
 <?php 
 if($marca_dagua == 'Sim'){ ?>
-<img class="marca" src="<?php echo $url_sistema ?>img/logo.jpg">	
+<img class="marca" src="<?php echo $url_sistema ?>img/<?php echo $icone_sistema ?>">	
 <?php } ?>
 
 
@@ -126,9 +128,9 @@ if($marca_dagua == 'Sim'){ ?>
 
 	<div style="border-style: solid; font-size: 10px; height: 50px;">
 		<table style="width: 100%; border: 0px solid #ccc;">
-			<tr>
-				<td style="border: 1px; solid #000; width: 7%; text-align: left;">
-					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="110px">
+			<tr style="background:#FFF">
+				<td style="width: 7%; text-align: left;">
+					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="110px">
 				</td>
 				<td style="width: 30%; text-align: left; font-size: 13px;">
 					
@@ -137,7 +139,7 @@ if($marca_dagua == 'Sim'){ ?>
 				
 				</td>
 				<td style="width: 47%; text-align: right; font-size: 9px;padding-right: 10px;">
-						<b><big>RELATÓRIO DE <span style="color:<?php echo $classe_entradas ?>"><?php echo $filtro_tipoF ?> <?php if($filtro_lancamentoF != ""){ echo '('. mb_strtoupper($filtro_lancamentoF).')'; } ?></span></big></b><br> <?php echo mb_strtoupper($texto_filtro) ?> <br> <?php echo mb_strtoupper($data_hoje) ?>
+						<b><big>RELATÓRIO DE <span style="color:<?php echo $classe_entradas ?>"><?php echo $filtro_tipoF ?> <?php if($filtro_lancamentoF != ""){ echo '('. @mb_strtoupper($filtro_lancamentoF).')'; } ?></span></big></b><br> <?php echo @mb_strtoupper($texto_filtro) ?> <br> <?php echo @mb_strtoupper($data_hoje) ?>
 				</td>
 			</tr>		
 		</table>
@@ -166,7 +168,7 @@ if($marca_dagua == 'Sim'){ ?>
 <div id="footer" class="row">
 <hr style="margin-bottom: 0;">
 	<table style="width:100%;">
-		<tr style="width:100%;">
+		<tr style="width:100%; background:#FFF">
 			<td style="width:60%; font-size: 10px; text-align: left;"><?php echo $nome_sistema ?> Telefone: <?php echo $telefone_sistema ?></td>
 			<td style="width:40%; font-size: 10px; text-align: right;"><p class="page">Página  </p></td>
 		</tr>
@@ -192,9 +194,9 @@ $pendentes = 0;
 $pagas = 0;
 
 if($mostrar_registros == 'Não'){
-$query = $pdo->query("SELECT * from $filtro_tipo where $filtro_data >= '$dataInicial' and $filtro_data <= '$dataFinal' and pago LIKE '%$filtro_pendentes%' and referencia LIKE '%$filtro_lancamento%' and usuario_lanc = '$id_usuario' order by $filtro_data asc");
+$query = $pdo->query("SELECT * from $filtro_tipo where $filtro_data >= '$dataInicial' and $filtro_data <= '$dataFinal' and pago LIKE '%$filtro_pendentes%' and referencia LIKE '%$filtro_lancamento%' and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' order by $filtro_data asc");
 }else{
-	$query = $pdo->query("SELECT * from $filtro_tipo where $filtro_data >= '$dataInicial' and $filtro_data <= '$dataFinal' and pago LIKE '%$filtro_pendentes%' and referencia LIKE '%$filtro_lancamento%' order by $filtro_data asc");
+	$query = $pdo->query("SELECT * from $filtro_tipo where $filtro_data >= '$dataInicial' and $filtro_data <= '$dataFinal' and pago LIKE '%$filtro_pendentes%' and referencia LIKE '%$filtro_lancamento%' and empresa = '$id_empresa' order by $filtro_data asc");
 }
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);

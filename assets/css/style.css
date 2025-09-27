@@ -4430,7 +4430,7 @@ label {
     margin-bottom: 0.5rem;
     font-weight: 500;
     font-size:13px;
-    color:#383838;
+    color:var(--primary);
 }
 
 button {
@@ -79742,6 +79742,9 @@ a.text-dark:focus {
 .iconBgSusses{
     background: #77edda !important;
 }
+.iconBgRoxo{
+    background: #993399  !important;
+}
 .iconBgDanger{
     background: #fa8282 !important;
 }
@@ -79846,4 +79849,26 @@ a.text-dark:focus {
     border-color: rgba(28, 39, 60, 0.2);
     border-top-left-radius: 0;
     border-top-right-radius: 0;
+}
+
+
+.swal-whatsapp-container {
+    z-index: 9999999999 !important; /* Maior que o z-index padrão das modais Bootstrap (1050) */
+}
+
+
+
+.text_area_mobile{
+   width:765px; 
+   height:550px;
+}
+
+
+@media only screen and (max-width: 700px) {
+
+    .text_area_mobile{
+       width:320px; 
+       height:280px;
+    }
+
 }

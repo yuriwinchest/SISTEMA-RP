@@ -1,14 +1,22 @@
 <?php
 @session_start();
+$id_empresa = @$_SESSION['empresa'];
 $mostrar_registros = @$_SESSION['registros'];
 $id_usuario = @$_SESSION['id'];
 $tabela = 'receber';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 if ($mostrar_registros == 'Não') {
-	$sql_usuario_lanc = " and usuario_lanc = '$id_usuario '";
+	$sql_usuario_lanc = " and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' ";
 } else {
-	$sql_usuario_lanc = " ";
+	$sql_usuario_lanc = " and empresa = '$id_empresa' ";
+}
+
+$editar_conta_paga = '';
+if (@$_SESSION['nivel'] != 'Administrador') {	
+	require_once("../../verificar_permissoes.php");
+	
 }
 
 $data_hoje = date('Y-m-d');
@@ -76,7 +84,7 @@ $total_recebidasF = 0;
 
 
 //PEGAR O TOTAL DAS CONTAS A PAGAR PENDENTES
-$query = $pdo->query("SELECT * from $tabela where pago = 'Não' $sql_usuario_lanc");
+$query = $pdo->query("SELECT * from $tabela where pago = 'Não' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' $sql_usuario_lanc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 if ($total_reg > 0) {
@@ -91,9 +99,9 @@ if ($total_reg > 0) {
 //PEGAR O TOTAL DAS CONTAS A PAGAR
 if ($mostrar_registros == 'Não') {
 
-	$query = $pdo->query("SELECT * from $tabela where usuario_lanc = '$id_usuario'");
+	$query = $pdo->query("SELECT * from $tabela where usuario_lanc = '$id_usuario' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' and empresa = '$id_empresa'");
 } else {
-	$query = $pdo->query("SELECT * from $tabela");
+	$query = $pdo->query("SELECT * from $tabela where $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' and empresa = '$id_empresa'");
 }
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
@@ -108,7 +116,7 @@ if ($total_reg > 0) {
 
 
 //PEGAR O TOTAL DAS CONTAS A PAGAR PEDENTES
-$query = $pdo->query("SELECT * from $tabela where vencimento < curDate() and pago = 'Não' $sql_usuario_lanc");
+$query = $pdo->query("SELECT * from $tabela where $tipo_data < curDate() and $tipo_data >= '$dataInicial' and pago = 'Não' $sql_usuario_lanc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 if ($total_reg > 0) {
@@ -121,7 +129,7 @@ if ($total_reg > 0) {
 }
 
 //PEGAR O TOTAL DAS CONTAS A PAGAR QUE VENCE HOJE
-$query = $pdo->query("SELECT * from $tabela where vencimento = curDate() and pago = 'Não' $sql_usuario_lanc");
+$query = $pdo->query("SELECT * from $tabela where $tipo_data = curDate() and pago = 'Não' $sql_usuario_lanc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_am = @count($res);
 if ($total_am > 0) {
@@ -135,7 +143,7 @@ if ($total_am > 0) {
 
 
 //PEGAR O TOTAL DAS CONTAS A PAGAR RECEBIDAS
-$query = $pdo->query("SELECT * from $tabela where pago = 'Sim' $sql_usuario_lanc");
+$query = $pdo->query("SELECT * from $tabela where pago = 'Sim' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' $sql_usuario_lanc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_pg = @count($res);
 if ($total_pg > 0) {
@@ -153,7 +161,7 @@ $data_amanha = date('Y/m/d', @strtotime("+1 days", @strtotime($data_hoje)));
 
 
 //PEGAR O TOTAL DAS CONTAS A PAGAR QUE VENCE AMANHÃ
-$query = $pdo->query("SELECT * from $tabela where vencimento = '$data_amanha' and pago = 'Não' $sql_usuario_lanc");
+$query = $pdo->query("SELECT * from $tabela where $tipo_data = '$data_amanha' and pago = 'Não' $sql_usuario_lanc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_am = @count($res);
 if ($total_am > 0) {
@@ -168,22 +176,25 @@ if ($total_am > 0) {
 
 
 if ($filtro == 'Vencidas') {
-	$query = $pdo->query("SELECT * from $tabela where $tipo_data < curDate() and pago = 'Não' $sql_usuario_lanc order by id desc ");
+	$query = $pdo->query("SELECT * from $tabela where $tipo_data >= '$dataInicial' and $tipo_data < curDate() and pago = 'Não' $sql_usuario_lanc order by id desc ");
 } else if ($filtro == 'Recebidas') {
-	$query = $pdo->query("SELECT * from $tabela where pago = 'Sim' $sql_usuario_lanc order by id desc ");
+	$query = $pdo->query("SELECT * from $tabela where pago = 'Sim' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' $sql_usuario_lanc order by id desc ");
 } else if ($filtro == 'Hoje') {
 	$query = $pdo->query("SELECT * from $tabela where $tipo_data = curDate() and pago = 'Não' $sql_usuario_lanc order by id desc ");
 } else if ($filtro == 'Amanha') {
 	$query = $pdo->query("SELECT * from $tabela where $tipo_data = '$data_amanha' and pago = 'Não' $sql_usuario_lanc order by id desc ");
+} else if ($filtro == 'Pendentes') {
+	$query = $pdo->query("SELECT * from $tabela where $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' and pago = 'Não' $sql_usuario_lanc order by id desc ");
 } else if ($filtro == 'Todas') {
 	if ($mostrar_registros == 'Não') {
-		$query = $pdo->query("SELECT * from $tabela where  usuario_lanc = '$id_usuario' order by id desc ");
+		$query = $pdo->query("SELECT * from $tabela where  usuario_lanc = '$id_usuario' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' and empresa = '$id_empresa' order by id desc ");
 	} else {
-		$query = $pdo->query("SELECT * from $tabela order by id desc ");
+		$query = $pdo->query("SELECT * from $tabela where empresa = '$id_empresa' and $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' order by id desc ");
 	}
 } else {
-	$query = $pdo->query("SELECT * from $tabela WHERE $tipo_data >= '$dataInicial' and vencimento <= '$dataFinal' $sql_usuario_lanc order by id desc ");
+	$query = $pdo->query("SELECT * from $tabela WHERE $tipo_data >= '$dataInicial' and $tipo_data <= '$dataFinal' $sql_usuario_lanc order by id desc ");
 }
+
 
 
 
@@ -197,8 +208,9 @@ if ($linhas > 0) {
 	<tr> 
 	<th align="center" width="5%" class="text-center">Selecionar</th>
 	<th>Descrição</th>	
-	<th class="">Valor</th>	
-	<th>Cliente</th>	
+	<th class="">Valor</th>
+	<th>Subtotal</th>
+	<th>Cliente</th>
 	<th>Vencimento</th>	
 	<th>Pagamento</th>		
 	<th class="text-center">Arquivo</th>	
@@ -234,6 +246,11 @@ HTML;
 		$pago = $res[$i]['pago'];
 		$quant_recorrencia = $res[$i]['quant_recorrencia'];
 		$id_recorrencia = $res[$i]['id_recorrencia'];
+		$dispositivo = $res[$i]['dispositivo'];
+		$data_assinatura = $res[$i]['data_assinatura'];
+		$api_pagamento_conta = $res[$i]['api_pagamento_conta'];
+		$pgtos_aceitaveis = $res[$i]['pgtos_aceitaveis'];
+		$taxa_cartao_api_receber = $res[$i]['taxa_cartao_api_receber'];
 
 		$vencimentoF = implode('/', array_reverse(@explode('-', $vencimento)));
 		$data_pgtoF = implode('/', array_reverse(@explode('-', $data_pgto)));
@@ -247,12 +264,6 @@ HTML;
 		$descontoF = @number_format($desconto, 2, ',', '.');
 		$taxaF = @number_format($taxa, 2, ',', '.');
 		$subtotalF = @number_format($subtotal, 2, ',', '.');
-
-		if ($pago == "Sim") {
-			$valor_finalF = @number_format($subtotal, 2, ',', '.');
-		} else {
-			$valor_finalF = @number_format($valor, 2, ',', '.');
-		}
 
 
 
@@ -342,9 +353,18 @@ HTML;
 			$classe_pago = 'text-danger';
 			$classe_pago2 = '#ffdddd';
 			$ocultar = '';
-			$total_pendentes += $valor;
+			
 			$ocultar_pendentes = 'ocultar';
 		}
+
+
+		if ($pago == 'Sim') {
+			$ocultar_checkbox = 'ocultar';	
+		}else{
+			$ocultar_checkbox = '';
+			$total_pendentes += $valor;
+		}
+
 
 		$valor_multa = 0;
 		$valor_juros = 0;
@@ -353,6 +373,7 @@ HTML;
 			$classe_venc = 'text-danger';
 			$valor_multa = $multa_atraso;
 
+
 			//pegar a quantidade de dias que o pagamento está atrasado
 			$dif = @strtotime($data_hoje) - @strtotime($vencimento);
 			$dias_vencidos = floor($dif / (60 * 60 * 24));
@@ -360,12 +381,17 @@ HTML;
 			$valor_juros = ($valor * $juros_atraso / 100) * $dias_vencidos;
 		}
 
+		$valor_jurosF = @number_format($valor_juros, 2, ',', '.');
+
+
 		$total_pendentesF = @number_format($total_pendentes, 2, ',', '.');
 		$total_pagoF = @number_format($total_pago, 2, ',', '.');
 
 		$taxa_conta = $taxa_pgto * $valor / 100;
 
+		
 
+		$taxa_contaF = @number_format($taxa_conta, 2, ',', '.');
 
 
 		//PEGAR RESIDUOS DA CONTA
@@ -381,13 +407,15 @@ HTML;
 				foreach ($res2[$i2] as $key => $value) {
 				}
 				$id_res = $res2[$i2]['id'];
-				$valor_resid = $res2[$i2]['valor'];
-				$total_resid += $valor_resid - $res2[$i2]['desconto'];
+				$valor_resid = $res2[$i2]['subtotal'];
+				$valor_resid = $valor_resid + $res2[$i2]['desconto'] - $res2[$i2]['taxa'] - $res2[$i2]['juros'] - $res2[$i2]['multa'];
+				$total_resid += $valor_resid;
 			}
 
 
 			$valor_com_residuos = $valor + $total_resid;
 		}
+		
 		if ($valor_com_residuos > 0) {
 			$vlr_antigo_conta = '(' . $valor_com_residuos . ')';
 			$descricao_link = '';
@@ -417,54 +445,60 @@ HTML;
 			}
 		}
 
-		if ($valor_finalF < $subtotal) {
-			$valor_finalF = $subtotal;
-		}
-
 
 		echo <<<HTML
 
 <tr style="background: {$classe_pago2}">
 <td align="center">
-<div class="custom-checkbox custom-control">
+<div class="custom-checkbox custom-control {$ocultar_checkbox}">
 <input type="checkbox" class="custom-control-input" id="seletor-{$id}" onchange="selecionar('{$id}')">
 <label for="seletor-{$id}" class="custom-control-label mt-1 text-dark"></label>
 </div>
 </td>
 <td><i class="fa fa-square {$classe_pago} mr-1"></i> {$descricao} {$classe_rec}</td>
-<td class="">R$ {$valor_finalF} <small><a href="#" onclick="mostrarResiduos('{$id}')" class="text-danger" title="Ver Resíduos">{$vlr_antigo_conta}</a></small></td>	
+<td class="">R$ {$valorF} <small><a href="#" onclick="mostrarResiduos('{$id}')" class="text-danger" title="Ver Resíduos">{$vlr_antigo_conta}</a></small></td>	
+<td>{$subtotalF}</td>
 <td>{$nome_cliente}</td>
 <td class="esc {$classe_venc}">{$vencimentoF}</td>
 <td>{$data_pgtoF}</td>
 
 <td><a href="images/contas/{$arquivo}" target="_blank"><img src="images/contas/{$tumb_arquivo}" width="25px"></a></td>
 <td>
-	<big><a class="icones_mobile {$ocultar}" href="#" onclick="editar('{$id}','{$descricao}','{$valor}','{$cliente}','{$vencimento}','{$data_pgto}','{$forma_pgto}','{$frequencia}','{$obs}','{$tumb_arquivo}','{$quant_recorrencia}')" title="Editar Dados"><i class="fa fa-edit text-primary"></i></a></big>
+	<a class="btn btn-info-light btn-sm {$ocultar}" href="#" onclick="editar('{$id}','{$descricao}','{$valor}','{$cliente}','{$vencimento}','{$data_pgto}','{$forma_pgto}','{$frequencia}','{$obs}','{$tumb_arquivo}','{$quant_recorrencia}','{$dispositivo}','{$data_assinatura}','{$api_pagamento_conta}','{$pgtos_aceitaveis}','{$taxa_cartao_api_receber}')" title="Editar Dados"><i class="fa fa-edit"></i></a>
 
-<big><a href="#" onclick="excluirConta('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
+<a class="btn btn-danger-light btn-sm {$ocultar}" href="#" onclick="excluirConta('{$id}')" title="Excluir"><i class="fa fa-trash-can"></i></a>
 
-<big><a class="icones_mobile" href="#" onclick="mostrar('{$descricao}','{$valorF}','{$nome_cliente}','{$vencimentoF}','{$data_pgtoF}','{$nome_pgto}','{$nome_frequencia}','{$obs}','{$tumb_arquivo}','{$multaF}','{$jurosF}','{$descontoF}','{$taxaF}','{$subtotalF}','{$nome_usu_lanc}','{$nome_usu_pgto}', '{$pago}', '{$arquivo}','{$quant_recorrencia}')" title="Mostrar Dados"><i class="fa fa-info-circle text-primary"></i></a></big>
+<a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$descricao}','{$valorF}','{$nome_cliente}','{$vencimentoF}','{$data_pgtoF}','{$nome_pgto}','{$nome_frequencia}','{$obs}','{$tumb_arquivo}','{$multaF}','{$jurosF}','{$descontoF}','{$taxaF}','{$subtotalF}','{$nome_usu_lanc}','{$nome_usu_pgto}', '{$pago}', '{$arquivo}','{$quant_recorrencia}','{$dispositivo}','{$api_pagamento_conta}','{$pgtos_aceitaveis}','{$taxa_cartao_api_receber}')" title="Mostrar Dados"><i class="fa-regular fa-eye"></i></a>
 
-<big><a class="{$ocultar} icones_mobile" href="#" onclick="baixar('{$id}', '{$valor}', '{$descricao}', '{$forma_pgto}', '{$taxa_conta}', '{$valor_multa}', '{$valor_juros}')" title="Baixar Conta"><i class="fa fa-check-square " style="color:#079934"></i></a></big>
+<a class="{$ocultar} btn btn-success-light btn-sm" href="#" onclick="baixar('{$id}', '{$valorF}', '{$descricao}', '{$forma_pgto}', '{$taxa_contaF}', '{$valor_multa}', '{$valor_jurosF}')" title="Baixar Conta"><i class="fa fa-check-square"></i></a>
 
-	<big><a  class="{$ocultar} icones_mobile" href="#" onclick="parcelar('{$id}', '{$valor}', '{$descricao}')" title="Parcelar Conta"><i class="fa fa-calendar-o " style="color:#7f7f7f"></i></a></big>
+	<a  class="{$ocultar} btn btn-dark-light btn-sm" href="#" onclick="parcelar('{$id}', '{$valor}', '{$descricao}')" title="Parcelar Conta"><i class="fa fa-calendar-o"></i></a>
 
-		<big><a class="icones_mobile" href="#" onclick="arquivo('{$id}', '{$descricao}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o " style="color:#22146e"></i></a></big>
+		<a class="btn btn-dark-light btn-sm" href="#" onclick="arquivo('{$id}', '{$descricao}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o"></i></a>
 
-		<big><a class="{$ocultar} {$ocultar_cobranca} icones_mobile" href="#" onclick="cobrar('{$id}')" title="Gerar Cobrança"><i class="bi bi-whatsapp " style="color:green"></i></a></big>
+		<a class="{$ocultar} {$ocultar_cobranca} btn-success-light btn-sm" href="#" onclick="cobrar('{$id}')" title="Gerar Cobrança"><i class="bi bi-whatsapp"></i></a>
 
-		<big><a href="#" onclick="cancelarRec('{$id}')" title="Cancelar Recorrência" class="{$ocultar_rec}"><i class="fa fa-ban text-danger"></i></a></big>
+		<a href="#" onclick="cancelarRec('{$id}')" title="Cancelar Recorrência" class="{$ocultar_rec} btn btn-danger-light btn-sm"><i class="fa fa-ban"></i></a>
 
-			<form   method="POST" action="rel/recibo_conta_class.php" target="_blank" style="display:inline-block">
+			<span class="{$ocultar_pendentes} btn btn-dark-light btn-sm">
+				<form   method="POST" action="rel/recibo_conta_class.php" target="_blank" style="display:inline-block">
 					<input type="hidden" name="id" value="{$id}">
-					<big><button class="{$ocultar_pendentes} icones_mobile" title="PDF do Recibo Conta" style="background:transparent; border:none; margin:0; padding:0"><i class="fa fa-file-pdf-o " style="color:green"></i></button></big>
+					<button class="{$ocultar_pendentes}" title="PDF do Recibo Conta" style="background:transparent; border:none; margin:0; padding:0"><i class="fa fa-file-pdf-o"></i></button>
 					</form>
+			</span>
 
 
+			<span class="{$ocultar_pendentes} btn btn-secondary-light btn-sm">
 					<form   method="POST" action="rel/imp_recibo.php" target="_blank" style="display:inline-block">
 					<input type="hidden" name="id" value="{$id}">
-					<big><button class="{$ocultar_pendentes} icones_mobile" title="Imprimir Recibo 80mmm" style="background:transparent; border:none; margin:0; padding:0"><i class="fa fa-print " style="color:#666464"></i></button></big>
+					<button class="{$ocultar_pendentes}" title="Imprimir Recibo 80mmm" style="background:transparent; border:none; margin:0; padding:0"><i class="fa fa-print"></i></button>
 					</form>
+	</span>
+
+
+	<a class="{$ocultar_pendentes} {$editar_conta_paga} btn-danger-light btn-sm" href="#" onclick="cancelarBaixa('{$id}')" title="Cancelar Baixa da Conta"><i class="fa fa-times-circle"></i></a>
+
+
 
 
 
@@ -486,12 +520,6 @@ HTML;
 </small>
 <br>
 
-
-			<p align="right" style="margin-top: -10px">
-				<span style="margin-right: 10px">Total Pendentes  <span style="color:red">R$ {$total_pendentesF} </span></span>
-				<span>Total Pago  <span style="color:green">R$ {$total_pagoF} </span></span>
-			</p>
-
 HTML;
 } else {
 	echo '<small>Nenhum Registro Encontrado!</small>';
@@ -501,14 +529,19 @@ HTML;
 
 
 <script type="text/javascript">
-	$(document).ready(function() {
-		$('#tabela').DataTable({
-			"language": {
+	$(document).ready(function () {
+		var tableId = '#tabela';
+
+    // Verifica se a tabela já foi inicializada
+    if (!$.fn.dataTable.isDataTable(tableId)) {
+        $(tableId).DataTable({
+           "language": {
 				//"url" : '//cdn.datatables.net/plug-ins/1.13.2/i18n/pt-BR.json'
 			},
 			"ordering": false,
 			"stateSave": true
-		});
+        });
+    }
 
 
 		$('#total_itens').text('R$ <?= $total_valorF ?>');
@@ -517,27 +550,32 @@ HTML;
 		$('#total_hoje').text('R$ <?= $total_hojeF ?>');
 		$('#total_amanha').text('R$ <?= $total_amanhaF ?>');
 		$('#total_recebidas').text('R$ <?= $total_recebidasF ?>');
+		$('#total_pendentes').text('R$ <?= $total_pendentesF ?>');
 	});
 </script>
 
 
 <script type="text/javascript">
-	function editar(id, descricao, valor, cliente, vencimento, data_pgto, forma_pgto, frequencia, obs, arquivo, quant_recorrencia) {
+	function editar(id, descricao, valor, cliente, vencimento, data_pgto, forma_pgto, frequencia, obs, arquivo, quant_recorrencia, dispositivo, data_assinatura, api_pagamento_conta, pgtos_aceitaveis, taxa_cartao_api_receber) {
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Registro');
 
 		$('#id').val(id);
 		$('#descricao').val(descricao);
 		$('#valor').val(valor);
+		mascaraMoeda(document.getElementById('valor'));	
 		$('#cliente').val(cliente).change();
 		$('#vencimento').val(vencimento);
 		$('#data_pgto').val(data_pgto);
 		$('#forma_pgto').val(forma_pgto).change();
 		$('#frequencia').val(frequencia).change();
+		$('#dispositivo').val(dispositivo).change();
 		$('#obs').val(obs);
 		$('#quant_recorrencia').val(quant_recorrencia);
-
-		mascara_moeda('valor');
+		$('#data_assinatura').val(data_assinatura);
+		$('#api_pagamento_conta').val(api_pagamento_conta).change();
+		$('#pgtos_aceitaveis').val(pgtos_aceitaveis).change();
+		$('#taxa_cartao_api_receber').val(taxa_cartao_api_receber);
 
 		$('#arquivo').val('');
 		$('#target').attr('src', 'images/contas/' + arquivo);
@@ -546,7 +584,7 @@ HTML;
 	}
 
 
-	function mostrar(descricao, valor, cliente, vencimento, data_pgto, nome_pgto, frequencia, obs, arquivo, multa, juros, desconto, taxa, total, usu_lanc, usu_pgto, pago, arq, quant_recorrencia) {
+	function mostrar(descricao, valor, cliente, vencimento, data_pgto, nome_pgto, frequencia, obs, arquivo, multa, juros, desconto, taxa, total, usu_lanc, usu_pgto, pago, arq, quant_recorrencia, dispositivo, api_pagamento_conta, pgtos_aceitaveis, taxa_cartao_api_receber) {
 
 		if (data_pgto == "") {
 			data_pgto = 'Pendente';
@@ -560,6 +598,8 @@ HTML;
 		$('#nome_pgto_dados').text(nome_pgto);
 		$('#frequencia_dados').text(frequencia);
 		$('#obs_dados').text(obs);
+		$('#dispositivo_dados').text(dispositivo);
+		$('#pgtos_aceitaveis_dados').text(pgtos_aceitaveis);
 
 		$('#multa_dados').text(multa);
 		$('#juros_dados').text(juros);
@@ -569,6 +609,8 @@ HTML;
 		$('#usu_lanc_dados').text(usu_lanc);
 		$('#usu_pgto_dados').text(usu_pgto);
 		$('#quant_recorrencia_dados').text(quant_recorrencia);
+		$('#api_pagamento_conta_dados').text(api_pagamento_conta);
+		$('#taxa_cartao_api_receber_dados').text(taxa_cartao_api_receber);
 
 		$('#pago_dados').text(pago);
 		$('#target_dados').attr("src", "images/contas/" + arquivo);
@@ -588,6 +630,11 @@ HTML;
 		$('#cliente').val('0').change();
 		$('#frequencia').val('0').change();
 		$('#quant_recorrencia').val('');
+		$('#dispositivo').val('').change();
+		$('#data_assinatura').val('');
+		$('#api_pagamento_conta').val('').change();
+		$('#pgtos_aceitaveis').val('').change();
+		$('#taxa_cartao_api_receber').val("<?= $taxa_cartao_api ?>");
 
 		$('#target').attr("src", "images/contas/sem-foto.png");
 
@@ -601,40 +648,51 @@ HTML;
 
 
 	function deletarSelBaixar() {
-		var ids = $('#ids').val();
-		var id = ids.split("-");
+    const ids = $('#ids').val(); // Recupera os IDs
+    const idArray = ids.split("-").filter((id) => id); // Divide os IDs e remove entradas vazias
+    const promises = []; // Array para armazenar as promessas de cada requisição
 
-		for (i = 0; i < id.length - 1; i++) {
-			var novo_id = id[i];
-			$.ajax({
-				url: 'paginas/' + pag + "/baixar_multiplas.php",
-				method: 'POST',
-				data: {
-					novo_id
-				},
-				dataType: "html",
+    idArray.forEach((novo_id) => {
+        const promise = $.ajax({
+            url: 'paginas/' + pag + "/baixar_multiplas.php",
+            method: 'POST',
+            data: { novo_id },
+            dataType: "html",
+        });
 
-				success: function(result) {
-					//alert(result)
+        promises.push(promise); // Adiciona a promessa ao array
+    });
 
-				}
-			});
-		}
+    // Aguarda todas as requisições serem concluídas
+    Promise.all(promises)
+        .then((results) => {
+            // Verifica se todos os resultados foram bem-sucedidos
+            const allSuccess = results.every((result) => result.trim() === "Baixado com Sucesso");
 
-		setTimeout(() => {
-			buscar();
-			limparCampos();
-		}, 1000);
+            if (allSuccess) {
+                setTimeout(() => {
+                    alertsucesso("Todos os itens foram baixados com sucesso!");
+                    buscar();
+                    limparCampos();
+                }, 1000);
+            } else {
+                // Exibe erro para os itens que falharam
+                const errors = results.filter((result) => result.trim() !== "Baixado com Sucesso");
+                alertErro("Alguns itens não foram baixados: " + errors.join(", "));
+            }
+        })
+        .catch(() => {
+            // Trata falhas gerais nas requisições
+            alertErro("Ocorreu um erro ao processar as requisições.");
+        });
+}
 
-
-	}
 
 
 	function permissoes(id, nome) {
 
 		$('#id_permissoes').val(id);
 		$('#nome_permissoes').text(nome);
-
 		$('#modalPermissoes').modal('show');
 		listarPermissoes(id);
 	}
@@ -652,24 +710,26 @@ HTML;
 
 
 	function baixar(id, valor, descricao, pgto, taxa, multa, juros) {
+		 if (juros == 0 || juros == '') {
+      juros = '0,00';
+    }
+    if (multa == 0 || multa == '') {
+      multa = '0,00';
+    }
+    if (taxa == 0 || taxa == '') {
+      taxa = '0,00';
+    }
+
 		$('#id-baixar').val(id);
 		$('#descricao-baixar').text(descricao);
 		$('#valor-baixar').val(valor);
 		$('#saida-baixar').val(pgto).change();
 		$('#subtotal').val(valor);
-
-		mascara_moeda('valor-baixar');
-
-
-
 		$('#valor-juros').val(juros);
-		$('#valor-desconto').val('');
+		$('#valor-desconto').val('0,00');
 		$('#valor-multa').val(multa);
 		$('#valor-taxa').val(taxa);
 
-		mascara_moeda('valor-juros');
-		mascara_moeda('valor-multa');
-		mascara_moeda('valor-taxa');
 
 		totalizar()
 
@@ -679,7 +739,6 @@ HTML;
 
 
 	function mostrarResiduos(id) {
-
 		$.ajax({
 			url: 'paginas/' + pag + "/listar-residuos.php",
 			method: 'POST',
@@ -688,7 +747,7 @@ HTML;
 			},
 			dataType: "html",
 
-			success: function(result) {
+			success: function (result) {
 				$("#listar-residuos").html(result);
 			}
 		});
@@ -716,8 +775,9 @@ HTML;
 			},
 			dataType: "html",
 
-			success: function(result) {
-				alert(result);
+			success: function (result) {
+				alertCobrar(result);
+				
 			}
 		});
 	}
@@ -726,110 +786,123 @@ HTML;
 
 <script type="text/javascript">
 	function cancelarRec(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
 
+$('body').removeClass('timer-alert');
+const swalWithBootstrapButtons = Swal.mixin({
+customClass: {
+	confirmButton: "btn btn-success",
+	cancelButton: "btn btn-danger me-1"
+},
+buttonsStyling: false
+});
 
-		$('body').removeClass('timer-alert');
-		swal({
-				title: "Deseja Cancelar as Recorrências?",
-				text: "Você não conseguirá recuperá-lo novamente!",
-				type: "error",
-				showCancelButton: true,
-				confirmButtonClass: "btn btn-danger",
-				confirmButtonText: "Sim, Excluir!",
-				closeOnConfirm: true
-
+swalWithBootstrapButtons.fire({
+title: "Deseja Cancelar as Recorrências?",
+text: "Você não conseguirá recuperá-lo novamente!",
+icon: "error",
+showCancelButton: true,
+confirmButtonText: "Sim, Baixar!",
+cancelButtonText: "Não, Cancelar!",
+reverseButtons: true
+}).then((result) => {
+if (result.isConfirmed) {
+	$.ajax({
+			url: 'paginas/' + pag + "/cancelar_recorrencia.php",
+			method: 'POST',
+			data: {
+				id
 			},
-			function() {
+			dataType: "html",
+			success: function (mensagem) {
+				if (mensagem.trim() == "Cancelado com Sucesso") {
+					alertsucesso(mensagem)
+					buscar();
+					limparCampos();
+				} else {
+					$('#mensagem-excluir').addClass('text-danger')
+					$('#mensagem-excluir').text(mensagem)
+				}
+			}
+		});
+	
+} else if (result.dismiss === Swal.DismissReason.cancel) {
+	swalWithBootstrapButtons.fire({
+		title: "Cancelado",
+		text: "Fecharei em 1 segundo.",
+		icon: "error", 
+		timer: 1000,
+		timerProgressBar: true,
+	});
+}
+});
+}
 
-				//swal("Excluído(a)!", "Seu arquivo imaginário foi excluído.", "success");
 
-
-				$.ajax({
-					url: 'paginas/' + pag + "/cancelar_recorrencia.php",
-					method: 'POST',
-					data: {
-						id
-					},
-					dataType: "html",
-
-					success: function(mensagem) {
-						if (mensagem.trim() == "Cancelado com Sucesso") {
-
-
-							listar();
-							limparCampos();
-						} else {
-							$('#mensagem-excluir').addClass('text-danger')
-							$('#mensagem-excluir').text(mensagem)
-						}
-					}
-				});
-			});
-
-	}
 
 	function excluirConta(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
 
-
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
+				// Realiza a requisição AJAX para excluir o item
 				$.ajax({
 					url: 'paginas/' + pag + "/excluir.php",
 					method: 'POST',
-					data: {
-						id
-					},
+					data: { id },
 					dataType: "html",
-
-					success: function(mensagem) {
-						if (mensagem.trim() == "Excluído com Sucesso") {
-
-							// Ação de exclusão aqui
-							Swal.fire({
-								title: 'Excluido com Sucesso!',
-								text: 'Fecharei em 1 segundo.',
-								icon: "success",
-								timer: 1000
-							})
-							//excluido();
-							buscar();
-							limparCampos();
-
-
-						} else {
-							$('#mensagem-excluir').addClass('text-danger')
-							$('#mensagem-excluir').text(mensagem)
-						}
+					success: function (mensagem) {
+						listar();
+						limparCampos();
+						// Exibe mensagem de sucesso após a exclusão
+						swalWithBootstrapButtons.fire({
+							title: mensagem,
+							text: 'Fecharei em 2 segundo.',
+							icon: "success",
+							timer: 2000,
+							timerProgressBar: true,
+							confirmButtonText: 'OK',
+						});
+					},
+					error: function () {
+						// Exibe mensagem de erro se a requisição falhar
+						swalWithBootstrapButtons.fire({
+							title: "Erro!",
+							text: mensagem,
+							icon: "error",
+							confirmButtonText: 'OK',
+						});
 					}
 				});
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
 	}
-
 
 
 
 	function selecionar(id) {
-
 		var ids = $('#ids').val();
-
 		if ($('#seletor-' + id).is(":checked") == true) {
 			var novo_id = ids + id + '-';
 			$('#ids').val(novo_id);
@@ -837,7 +910,6 @@ HTML;
 			var retirar = ids.replace(id + '-', '');
 			$('#ids').val(retirar);
 		}
-
 		var ids_final = $('#ids').val();
 		if (ids_final == "") {
 			$('#btn-deletar').hide();
@@ -850,50 +922,89 @@ HTML;
 
 
 	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
 
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
 
 				for (i = 0; i < id.length - 1; i++) {
-					excluirMultiplos(id[i]);
+					excluirMultiplosContas(id[i]);
 				}
 
-				setTimeout(() => {
-					// Ação de exclusão aqui
-					Swal.fire({
-						title: 'Excluido com Sucesso!',
-						text: 'Fecharei em 1 segundo.',
-						icon: "success",
-						timer: 1000
-					})
+				
 
-					buscar();
-				}, 1000);
-
-				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
+	}
+
+	function excluirMultiplosContas(id) {
+    //$('#mensagem-excluir').text('Excluindo...')
+
+    $.ajax({
+        url: 'paginas/' + pag + "/excluir.php",
+        method: 'POST',
+        data: { id },
+        dataType: "html",
+
+        success: function (mensagem) {
+            if (mensagem.trim() == "Excluído com Sucesso") {
+				alertexcluido(mensagem)
+                buscar();
+                limparCampos()
+            } else {
+                $('#mensagem-excluir').addClass('text-danger')
+                $('#mensagem-excluir').text(mensagem)
+            }
+        }
+    });
+}
 
 
-	};
+
+function cancelarBaixa(id) {
+    //$('#mensagem-excluir').text('Excluindo...')
+
+    $.ajax({
+        url: 'paginas/' + pag + "/cancelar_baixa.php",
+        method: 'POST',
+        data: { id },
+        dataType: "html",
+
+        success: function (mensagem) {
+            if (mensagem.trim() == "Excluído com Sucesso") {
+				alertsucesso('Remoção da baixa feita!')
+                buscar();
+                limparCampos()
+            } else {
+                $('#mensagem-excluir').addClass('text-danger')
+                $('#mensagem-excluir').text(mensagem)
+            }
+        }
+    });
+}
 </script>

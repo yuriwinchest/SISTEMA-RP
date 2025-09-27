@@ -1,9 +1,12 @@
 <?php
-$tabela = 'cargos';
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
+$tabela = 'cargos';
 
-$query = $pdo->query("SELECT * from $tabela order by id desc");
+$query = $pdo->query("SELECT * from $tabela where empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
@@ -39,7 +42,7 @@ HTML;
 <td>
 	<big><a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}')" title="Editar Dados"><i class="fa fa-edit "></i></a></big>
 
-	<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
+	<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can"></i></a></big>
 	
 </td>
 </tr>
@@ -119,33 +122,31 @@ HTML;
 	}
 
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
-
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -154,16 +155,18 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
-
-	};
+	}
 </script>

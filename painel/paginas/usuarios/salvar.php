@@ -1,6 +1,14 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'usuarios';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
+
+if($modo_teste == 'Sim'){
+	echo 'Em modo de teste esse recurso fica desabilitado!';
+	exit();
+}
 
 $nome = $_POST['nome'];
 $email = $_POST['email'];
@@ -8,7 +16,7 @@ $telefone = $_POST['telefone'];
 $nivel = $_POST['nivel'];
 $endereco = $_POST['endereco'];
 $id = $_POST['id'];
-$mostrar_registros = $_POST['mostrar_registros'];
+$mostrar_registros = @$_POST['mostrar_registros'];
 $numero = @ $_POST['numero'];
 $bairro = @$_POST['bairro'];
 $cidade = @$_POST['cidade'];
@@ -42,17 +50,40 @@ if ($cpf != "") {
 $senha = '123';
 $senha_crip = password_hash($senha, PASSWORD_DEFAULT);
 
+
+//limitar quantidade de usuarios por plano
+$query = $pdo->query("SELECT * from empresas where id = '$id_empresa' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$plano = @$res[0]['plano'];
+
+$query = $pdo->query("SELECT * from planos where id = '$plano' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$usuarios_plano = @$res[0]['usuarios'];
+
+$query = $pdo->query("SELECT * from usuarios where empresa = '$id_empresa' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$usuarios_cadastrados = @count($res);
+
+if($usuarios_plano > 0){
+	if($usuarios_cadastrados >= $usuarios_plano){
+		echo 'Você já possui '.$usuarios_cadastrados.' Usuários cadastrados, seu plano permite o máximo de '.$usuarios_plano.' usuários!';
+		exit();
+	}
+}
+
+
+
 //validacao email
-$query = $pdo->query("SELECT * from $tabela where email = '$email'");
+$query = $pdo->query("SELECT * from $tabela where email = '$email' ");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
-    echo 'Email já Cadastrado!';
+    echo 'Email já Cadastrado no sistema!';
     exit();
 }
 
 //validacao telefone
-$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone'");
+$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
@@ -79,72 +110,92 @@ if ($total_reg > 0) {
 }
 
 
-//SCRIPT PARA SUBIR FOTO NO SERVIDOR
+
+// SCRIPT PARA SUBIR FOTO NO SERVIDOR
+// REDIMECIONAR A IMAGEM PARA 700PX DE LARGURA E REDUZIR A QUALIDADE PARA 20%
 $nome_img = date('d-m-Y H:i:s') . '-' . @$_FILES['foto']['name'];
 $nome_img = preg_replace('/[ :]+/', '-', $nome_img);
-
-$caminho = '../../images/perfil/' . $nome_img;
-
+$caminho = '../../../sas/images/perfil/' . $nome_img;
 $imagem_temp = @$_FILES['foto']['tmp_name'];
-
 if (@$_FILES['foto']['name'] != "") {
-
-    $ext = pathinfo($nome_img, PATHINFO_EXTENSION);
-    if ($ext == 'png' or $ext == 'jpg' or $ext == 'jpeg' or $ext == 'gif' or $ext == 'PNG' or $ext == 'JPG' or $ext == 'JPEG' or $ext == 'GIF') {
-
-        //EXCLUO A FOTO ANTERIOR
-        if ($foto != "sem-foto.jpg") {
-            @unlink('../../images/perfil/' . $foto);
-        }
-
-        $foto = $nome_img;
-
-        //pegar o tamanho da imagem
-        list($largura, $altura) = getimagesize($imagem_temp);
-
-        if ($largura > 1400) {
-
-            if ($ext == 'png') {
-                $image = imagecreatefrompng($imagem_temp);
-            } else if ($ext == 'jpeg' or $ext == 'jpg') {
-                $image = imagecreatefromjpeg($imagem_temp);
-            } else {
-                die("Formato de imagem não suportado.");
-            }
-
-
-            // Reduza a qualidade para 20% ajuste conforme necessário
-            imagejpeg($image, $caminho, 20);
-            imagedestroy($image);
-
-
-        } else {
-            move_uploaded_file($imagem_temp, $caminho);
-        }
-
-
-    } else {
-        echo 'Extensão de Imagem não permitida!';
-        exit();
-    }
+	$ext = strtolower(pathinfo($nome_img, PATHINFO_EXTENSION));
+	// Suporte a WebP incluído
+	if (in_array($ext, ['png', 'jpg', 'jpeg', 'gif', 'webp', 'PNG', 'JPG', 'JPEG', 'GIF', 'WEBP'])) {
+		// EXCLUI A FOTO ANTERIOR
+		if ($foto != "sem-foto.png") {
+			@unlink('../../../sas/images/perfil/' . $foto);
+		}
+		$foto = $nome_img;
+		// PEGA O TAMANHO ORIGINAL DA IMAGEM
+		list($largura, $altura) = getimagesize($imagem_temp);
+		// APENAS REDIMENSIONA SE A LARGURA FOR MAIOR QUE 1400
+		if ($largura > 1400) {
+			// CALCULA A NOVA ALTURA MANTENDO A PROPORÇÃO
+			$nova_largura = 1400;
+			$nova_altura = ($altura / $largura) * $nova_largura;
+			// CRIA UMA NOVA IMAGEM EM BRANCO
+			$nova_imagem = imagecreatetruecolor($nova_largura, $nova_altura);
+			// MANTÉM A TRANSPARÊNCIA PARA PNG, GIF E WEBP
+			if (in_array($ext, ['png', 'gif', 'webp'])) {
+				imagealphablending($nova_imagem, false);
+				imagesavealpha($nova_imagem, true);
+				$fundo_transparente = imagecolorallocatealpha($nova_imagem, 0, 0, 0, 127);
+				imagefill($nova_imagem, 0, 0, $fundo_transparente);
+			}
+			// CARREGA A IMAGEM ORIGINAL
+			if ($ext == 'png') {
+				$imagem_original = imagecreatefrompng($imagem_temp);
+			} elseif ($ext == 'jpeg' || $ext == 'jpg') {
+				$imagem_original = imagecreatefromjpeg($imagem_temp);
+			} elseif ($ext == 'gif') {
+				$imagem_original = imagecreatefromgif($imagem_temp);
+			} elseif ($ext == 'webp') {
+				$imagem_original = imagecreatefromwebp($imagem_temp);
+			} else {
+				die("Formato de imagem não suportado.");
+			}
+			// REDIMENSIONA A IMAGEM
+			imagecopyresampled($nova_imagem, $imagem_original, 0, 0, 0, 0, $nova_largura, $nova_altura, $largura, $altura);
+			// SALVA A NOVA IMAGEM MANTENDO A TRANSPARÊNCIA OU QUALIDADE
+			if ($ext == 'png') {
+				imagepng($nova_imagem, $caminho, 9); // Salva PNG com compressão máxima
+			} elseif ($ext == 'gif') {
+				imagegif($nova_imagem, $caminho);
+			} elseif ($ext == 'webp') {
+				imagewebp($nova_imagem, $caminho, 80); // Salva WebP com qualidade de 80%
+			} else {
+				imagejpeg($nova_imagem, $caminho, 20); // Salva JPEG com 20% de qualidade
+			}
+			// LIBERA A MEMÓRIA
+			imagedestroy($imagem_original);
+			imagedestroy($nova_imagem);
+		} else {
+			// SE A LARGURA FOR MENOR OU IGUAL A 1400, APENAS MOVE A IMAGEM SEM REDIMENSIONAR
+			move_uploaded_file($imagem_temp, $caminho);
+		}
+	} else {
+		echo 'Extensão de Imagem não permitida!';
+		exit();
+	}
 }
 
 
+
+
+
 if ($id == "") {
-    $query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', foto = '$foto', telefone = :telefone, data = curDate(), endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave'");
+    $query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', foto = '$foto', telefone = :telefone, data = curDate(), endereco = :endereco, mostrar_registros = :mostrar_registros, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep $nasc, cpf = :cpf, pix = :pix, acessar_painel = 'Sim', complemento = :complemento, tipo_chave = '$tipo_chave', empresa = '$id_empresa'");
 
 //enviar whatsapp
     if ($api_whatsapp != 'Não' and $telefone != '') {
-
         $telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone);
-
         $mensagem_whatsapp = '*' . $nome_sistema . '*%0A%0A';
         $mensagem_whatsapp .= '_Olá ' . $nome . ' Você foi Cadastrado no Sistema!!_ %0A';
         $mensagem_whatsapp .= '*Email:* ' . $email . ' %0A';
         $mensagem_whatsapp .= '*Senha:* ' . $senha . ' %0A';
-        $mensagem_whatsapp .= '*Url Acesso:* %0A' . $url_sistema . ' %0A%0A';
+        $mensagem_whatsapp .= '*Url Acesso:* %0A' . $url_sistema . 'login %0A%0A';
         $mensagem_whatsapp .= '_Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!_';
-
+        $mensagem = $mensagem_whatsapp;
         require('../../apis/texto.php');
     }
 

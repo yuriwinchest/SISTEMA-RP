@@ -1,0 +1,39 @@
+<?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
+require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
+
+$pagina = 'modelo';
+
+$valor = @$_POST['valor'];
+
+echo '<select class="sel4" name="modelo" id="modelo" style="width:100%;" required> ';
+
+if($valor == ""){
+	echo '<option value="">Selecione um Modelo</option>';
+}
+
+$query = $pdo->query("SELECT * FROM modelos where ativo = 'Sim' and empresa = '$id_empresa' order by id desc");
+									$res = $query->fetchAll(PDO::FETCH_ASSOC);
+									for($i=0; $i < @count($res); $i++){
+										foreach ($res[$i] as $key => $value){}
+
+	echo '<option value="'.$res[$i]['id'].'">'.$res[$i]['nome'].'</option>';
+
+}
+
+echo '</select>';
+
+?>
+
+
+
+
+	<script type="text/javascript">
+			$(document).ready(function() {				
+				$('.sel4').select2({
+					dropdownParent: $('#modalForm')
+				});
+			});
+	</script>

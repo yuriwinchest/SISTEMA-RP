@@ -1,6 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
+
 $tabela = 'usuarios';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 $nome = $_POST['nome'];
 $email = $_POST['email'];
@@ -21,6 +25,22 @@ $cpf = @$_POST['cpf'];
 $acessar_painel = @$_POST['acessar_painel'];
 $complemento = @$_POST['complemento'];
 $tipo_chave = @$_POST['tipo_chave'];
+$comissao = @$_POST['comissao'];
+$comissao = str_replace(',', '.', $comissao);
+
+$data_nasc = date("Y-m-d", @strtotime(@str_replace("/", "-", $_POST["data_nasc"])));
+
+
+$salario = $_POST['salario'];
+$salario = str_replace('.', '', $salario);
+$salario = str_replace(',', '.', $salario);
+$valor_hora = $_POST['valor_hora'];
+$valor_hora = str_replace('.', '', $valor_hora);
+$valor_hora = str_replace(',', '.', $valor_hora);
+$hora_entrada = $_POST['hora_entrada'];
+$hora_saida = $_POST['hora_saida'];
+$jornada_horas = $_POST['jornada_horas'];
+
 
 
 
@@ -42,8 +62,29 @@ if ($cpf != "") {
 }
 
 
+
+//limitar quantidade de usuarios por plano
+$query = $pdo->query("SELECT * from empresas where id = '$id_empresa' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$plano = @$res[0]['plano'];
+
+$query = $pdo->query("SELECT * from planos where id = '$plano' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$usuarios_plano = @$res[0]['usuarios'];
+
+$query = $pdo->query("SELECT * from usuarios where empresa = '$id_empresa' ");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$usuarios_cadastrados = @count($res);
+
+if($usuarios_plano > 0){
+	if($usuarios_cadastrados >= $usuarios_plano){
+		echo 'Você já possui '.$usuarios_cadastrados.' Usuários cadastrados, seu plano permite o máximo de '.$usuarios_plano.' usuários!';
+		exit();
+	}
+}
+
 //validacao telefone
-$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone'");
+$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
@@ -79,7 +120,7 @@ if ($total_reg > 0) {
 $nome_img = date('d-m-Y H:i:s') . '-' . @$_FILES['foto']['name'];
 $nome_img = preg_replace('/[ :]+/', '-', $nome_img);
 
-$caminho = '../../images/perfil/' . $nome_img;
+$caminho = '../../../sas/images/perfil/' . $nome_img;
 
 $imagem_temp = @$_FILES['foto']['tmp_name'];
 
@@ -90,7 +131,7 @@ if (@$_FILES['foto']['name'] != "") {
 
 		//EXCLUO A FOTO ANTERIOR
 		if ($foto != "sem-foto.jpg") {
-			@unlink('../../images/perfil/' . $foto);
+			@unlink('../../../sas/images/perfil/' . $foto);
 		}
 
 		$foto = $nome_img;
@@ -134,7 +175,7 @@ if (@$_FILES['foto']['name'] != "") {
 
 
 if ($id == "") {
-	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', telefone = :telefone, data = curDate(), endereco = :endereco, pix = :pix $nasc, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep, acessar_painel = '$acessar_painel', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto'");
+	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, email = :email, senha = '', senha_crip = '$senha_crip', nivel = '$nivel', ativo = 'Sim', telefone = :telefone, data = curDate(), endereco = :endereco, pix = :pix $nasc, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep, acessar_painel = '$acessar_painel', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto', empresa = '$id_empresa', comissao = :comissao, salario = :salario, valor_hora = :valor_hora, hora_entrada = '$hora_entrada', hora_saida = '$hora_saida', jornada_horas = '$jornada_horas'");
 
 
 	//api whats
@@ -145,9 +186,9 @@ if ($id == "") {
 		$mensagem_whatsapp .= '_Olá ' . $nome . ' Você foi Cadastrado no Sistema!!_ %0A';
 		$mensagem_whatsapp .= '*Email:* ' . $email . ' %0A';
 		$mensagem_whatsapp .= '*Senha:* ' . $senha . ' %0A';
-		$mensagem_whatsapp .= '*Url Acesso:* ' . $url_sistema . ' %0A%0A';
+		$mensagem_whatsapp .= '*Url Acesso:* ' . $url_sistema . 'login %0A%0A';
 		$mensagem_whatsapp .= '_Após acessar seu painel, adicone uma foto e trocar a senha para uma de sua preferência!_';
-
+		$mensagem = $mensagem_whatsapp;
 		require('../../apis/texto.php');
 
 
@@ -156,7 +197,7 @@ if ($id == "") {
 
 
 } else {
-	$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, nivel = '$nivel', telefone = :telefone, endereco = :endereco, pix = :pix $nasc, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep, acessar_painel = '$acessar_painel', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto' where id = '$id'");
+	$query = $pdo->prepare("UPDATE $tabela SET nome = :nome, email = :email, nivel = '$nivel', telefone = :telefone, endereco = :endereco, pix = :pix $nasc, numero = :numero, bairro = :bairro, cidade = :cidade, estado = :estado, cep = :cep, acessar_painel = '$acessar_painel', complemento = :complemento, tipo_chave = '$tipo_chave', foto = '$foto', comissao = :comissao, salario = :salario, valor_hora = :valor_hora, hora_entrada = '$hora_entrada', hora_saida = '$hora_saida', jornada_horas = '$jornada_horas' where id = '$id'");
 }
 $query->bindValue(":nome", "$nome");
 $query->bindValue(":email", "$email");
@@ -169,6 +210,9 @@ $query->bindValue(":cidade", "$cidade");
 $query->bindValue(":estado", "$estado");
 $query->bindValue(":cep", "$cep");
 $query->bindValue(":complemento", "$complemento");
+$query->bindValue(":comissao", "$comissao");
+$query->bindValue(":salario", "$salario");
+$query->bindValue(":valor_hora", "$valor_hora");
 $query->execute();
 
 

@@ -1,14 +1,16 @@
 <?php 
-include('../../conexao.php');
 include('data_formatada.php');
+
+if ($token_rel != 'M543661') {
+	echo '<script>window.location="../../"</script>';
+	exit();
+}
 
 $data_atual = date('Y-m-d');
 $mes_atual = Date('m');
 $ano_atual = Date('Y');
 $data_inicio_mes = $ano_atual."-".$mes_atual."-01";
 $data_inicio_ano = $ano_atual."-01-01";
-
-
 
 
 //PEGAR DADOS DO MES JANEIRO
@@ -18,7 +20,7 @@ $receber_janeiro = 0;
 $saldo_janeiro = 0;
 $data_inicio_mes = $ano_atual."-01-01";
 $data_final_mes = $ano_atual."-01-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -26,7 +28,7 @@ if($linhas > 0){
 		$receber_janeiro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -61,7 +63,7 @@ $bissexto = date('L', @mktime(0, 0, 0, 1, 1, $ano_atual));
 		$data_final_mes = $ano_atual.'-02-28';
 	}
 
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -69,7 +71,7 @@ if($linhas > 0){
 		$receber_fevereiro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -97,7 +99,7 @@ $receber_marco = 0;
 $saldo_marco = 0;
 $data_inicio_mes = $ano_atual."-03-01";
 $data_final_mes = $ano_atual."-03-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -105,7 +107,7 @@ if($linhas > 0){
 		$receber_marco += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -134,7 +136,7 @@ $receber_abril = 0;
 $saldo_abril = 0;
 $data_inicio_mes = $ano_atual."-04-01";
 $data_final_mes = $ano_atual."-04-30";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -142,7 +144,7 @@ if($linhas > 0){
 		$receber_abril += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -170,7 +172,7 @@ $receber_maio = 0;
 $saldo_maio = 0;
 $data_inicio_mes = $ano_atual."-05-01";
 $data_final_mes = $ano_atual."-05-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -178,7 +180,7 @@ if($linhas > 0){
 		$receber_maio += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -206,7 +208,7 @@ $receber_junho = 0;
 $saldo_junho = 0;
 $data_inicio_mes = $ano_atual."-06-01";
 $data_final_mes = $ano_atual."-06-30";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -214,7 +216,7 @@ if($linhas > 0){
 		$receber_junho += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -243,7 +245,7 @@ $receber_julho = 0;
 $saldo_julho = 0;
 $data_inicio_mes = $ano_atual."-07-01";
 $data_final_mes = $ano_atual."-07-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -251,7 +253,7 @@ if($linhas > 0){
 		$receber_julho += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -279,7 +281,7 @@ $receber_agosto = 0;
 $saldo_agosto = 0;
 $data_inicio_mes = $ano_atual."-08-01";
 $data_final_mes = $ano_atual."-08-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -287,7 +289,7 @@ if($linhas > 0){
 		$receber_agosto += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -315,7 +317,7 @@ $receber_setembro = 0;
 $saldo_setembro = 0;
 $data_inicio_mes = $ano_atual."-09-01";
 $data_final_mes = $ano_atual."-09-30";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -323,7 +325,7 @@ if($linhas > 0){
 		$receber_setembro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -351,7 +353,7 @@ $receber_outubro = 0;
 $saldo_outubro = 0;
 $data_inicio_mes = $ano_atual."-10-01";
 $data_final_mes = $ano_atual."-10-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -359,7 +361,7 @@ if($linhas > 0){
 		$receber_outubro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -387,7 +389,7 @@ $receber_novembro = 0;
 $saldo_novembro = 0;
 $data_inicio_mes = $ano_atual."-11-01";
 $data_final_mes = $ano_atual."-11-30";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -395,7 +397,7 @@ if($linhas > 0){
 		$receber_novembro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -423,7 +425,7 @@ $receber_dezembro = 0;
 $saldo_dezembro = 0;
 $data_inicio_mes = $ano_atual."-12-01";
 $data_final_mes = $ano_atual."-12-31";
-$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from receber where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -431,7 +433,7 @@ if($linhas > 0){
 		$receber_dezembro += $res[$i]['subtotal'];
 	}
 }
-$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'");
+$query = $pdo->query("SELECT * from pagar where data_pgto >= '$data_inicio_mes' and data_pgto <= '$data_final_mes' and pago = 'Sim'  and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -477,7 +479,7 @@ body {font-family: 'Tw Cen MT', sans-serif;}
 <body>
 <?php 
 if($marca_dagua == 'Sim'){ ?>
-<img class="marca" src="<?php echo $url_sistema ?>img/logo.jpg">	
+<img class="marca" src="<?php echo $url_sistema ?>img/<?php echo $icone_sistema ?>">	
 <?php } ?>
 
 
@@ -486,8 +488,8 @@ if($marca_dagua == 'Sim'){ ?>
 	<div style="border-style: solid; font-size: 10px; height: 50px;">
 		<table style="width: 100%; border: 0px solid #ccc;">
 			<tr>
-				<td style="border: 1px; solid #000; width: 7%; text-align: left;">
-					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="110px">
+				<td style="width: 7%; text-align: left;">
+					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="155px">
 				</td>
 				<td style="width: 30%; text-align: left; font-size: 13px;">
 					
@@ -496,7 +498,7 @@ if($marca_dagua == 'Sim'){ ?>
 				
 				</td>
 				<td style="width: 47%; text-align: right; font-size: 9px;padding-right: 10px;">
-						<b><big>RELATÓRIO DE BALANÇO ANUAL</big></b><br>  <br> <?php echo mb_strtoupper($data_hoje) ?>
+						<b><big>RELATÓRIO DE BALANÇO ANUAL</big></b><br>  <br> <?php echo @mb_strtoupper($data_hoje) ?>
 				</td>
 			</tr>		
 		</table>
@@ -745,7 +747,7 @@ if($marca_dagua == 'Sim'){ ?>
 <div id="footer" class="row">
 <hr style="margin-bottom: 0;">
 	<table style="width:100%;">
-		<tr style="width:100%;">
+		<tr style="width:100%; background:#FFF">
 			<td style="width:60%; font-size: 10px; text-align: left;"><?php echo $nome_sistema ?> Telefone: <?php echo $telefone_sistema ?></td>
 			<td style="width:40%; font-size: 10px; text-align: right;"><p class="page">Página  </p></td>
 		</tr>

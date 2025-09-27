@@ -1,11 +1,15 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 include('../../conexao.php');
 
 $id = $_POST['id'];
 
-//ALIMENTAR OS DADOS NO RELATÓRIO
-$html = file_get_contents($url_sistema."painel/rel/recibo_conta.php?id=$id");
-
+include('../buscar_config.php');
+$token_rel = "M543661";
+ob_start();
+include("recibo_conta.php");
+$html = ob_get_clean();
 
 //CARREGAR DOMPDF
 require_once '../dompdf/autoload.inc.php';

@@ -1,5 +1,6 @@
 <?php 
 @session_start();
+$id_empresa = @$_SESSION['empresa'];
 $mostrar_registros = @$_SESSION['registros'];
 $id_usuario = @$_SESSION['id'];
 
@@ -10,9 +11,14 @@ $dataInicial = $_POST['dataInicial'];
 $dataFinal = $_POST['dataFinal'];
 $pago = $_POST['pago'];
 $tipo_data = $_POST['tipo_data'];
+$plano_contas = $_POST['plano_contas'];
 
+include('../buscar_config.php');
+$token_rel = "M543661";
+ob_start();
+include("pagar.php");
+$html = ob_get_clean();
 
-$html = file_get_contents($url_sistema."painel/rel/pagar.php?dataInicial=$dataInicial&dataFinal=$dataFinal&pago=$pago&tipo_data=$tipo_data&mostrar_registros=$mostrar_registros&id_usuario=$id_usuario");
 
 //CARREGAR DOMPDF
 require_once '../dompdf/autoload.inc.php';

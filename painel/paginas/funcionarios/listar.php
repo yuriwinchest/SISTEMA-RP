@@ -1,8 +1,11 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'usuarios';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-$query = $pdo->query("SELECT * from $tabela where nivel != 'Cliente' and nivel != 'Administrador' order by id desc");
+$query = $pdo->query("SELECT * from $tabela where nivel != 'Cliente' and nivel != 'Administrador' and empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
@@ -44,10 +47,23 @@ HTML;
 		$acessar_painel = $res[$i]['acessar_painel'];
 		$complemento = $res[$i]['complemento'];
 		$tipo_chave = $res[$i]['tipo_chave'];
+		$comissao = $res[$i]['comissao'];
+
+
+			$salario = $res[$i]['salario'];
+$valor_hora = $res[$i]['valor_hora'];
+$hora_entrada = $res[$i]['hora_entrada'];
+$hora_saida = $res[$i]['hora_saida'];
+$jornada_horas = $res[$i]['jornada_horas'];
+
+	$salarioF = @number_format($salario, 2, ',', '.');
+$valor_horaF = @number_format($valor_hora, 2, ',', '.');
 
 		$dataF = implode('/', array_reverse(@explode('-', $data)));
 
 		$data_nascF = implode('/', array_reverse(@explode('-', $data_nasc)));
+
+		$tel_whatsF = '55' . preg_replace('/[ ()-]+/', '', $telefone);
 
 		if ($ativo == 'Sim') {
 			$icone = 'fa-check-square';
@@ -68,6 +84,12 @@ HTML;
 			$cor_adm = 'bg-success-transparent text-success';
 		}
 
+		if($telefone != '') {
+			$ocultar_whats = '';
+		}else{
+			$ocultar_whats = 'ocultar';
+		}
+
 
 
 		echo <<<HTML
@@ -82,19 +104,19 @@ HTML;
 <td style="color:{$classe_ativo}">{$telefone}</td>
 <td style="color:{$classe_ativo}">{$email}</td>
 <td><span class="badge font-weight-semibold {$cor_adm} tx-12" style="width:90%;">{$nivel}</span></td>
-<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}')" src="images/perfil/{$foto}" class="hovv" width="25px"></td>
+<td class="text-center" style="color:{$classe_ativo}"><img alt="avatar" width="30px" height="30px" class="rounded-circle hovv" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}', '{$salarioF}', '{$valor_horaF}', '{$hora_entrada}', '{$hora_saida}', '{$jornada_horas}')" src="../sas/images/perfil/{$foto}" width="25px"></td>
 <td>
-	<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}', '{$foto}')" title="Editar Dados"><i class="fa fa-edit "></i></a>
+	<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$nivel}','{$pix}','{$data_nascF}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}', '{$foto}', '{$comissao}', '{$salario}', '{$valor_hora}', '{$hora_entrada}', '{$hora_saida}', '{$jornada_horas}')" title="Editar Dados"><i class="fa fa-edit "></i></a>
 
 <a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a>
 
-<a class="btn btn-primary-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}')" title="Mostrar Dados"><i class="fa fa-info-circle "></i></a>
-
+<a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$ativo}','{$dataF}', '{$senha}', '{$nivel}', '{$foto}','{$pix}','{$data_nasc}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$acessar_painel}','{$complemento}','{$tipo_chave}', '{$salarioF}', '{$valor_horaF}', '{$hora_entrada}', '{$hora_saida}', '{$jornada_horas}')" title="Mostrar Dados"><i class="fa fa-eye "></i></a>
 
 <a class="btn btn-success-light btn-sm" href="#" onclick="ativar('{$id}', '{$acao}')" title="{$titulo_link}"><i class="fa {$icone} "></i></a>
 
+<a class="btn btn-dark-light btn-sm" href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o " ></i></a>
 
-<a class="btn btn-secondary-light btn-sm" href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o " ></i></a>
+<a class="{$ocultar_whats} btn btn-success-light btn-sm" class="" href="http://api.whatsapp.com/send?1=pt_BR&phone={$tel_whatsF}" title="Whatsapp" target="_blank"><i style="color: green" class="bi bi-whatsapp"></i></i></a>
 
 </td>
 </tr>
@@ -128,7 +150,7 @@ HTML;
 </script>
 
 <script type="text/javascript">
-	function editar(id, nome, email, telefone, endereco, nivel, pix, data_nasc, numero, bairro, cidade, estado, cep, acessar_painel, complemento, tipo_chave, foto) {
+	function editar(id, nome, email, telefone, endereco, nivel, pix, data_nasc, numero, bairro, cidade, estado, cep, acessar_painel, complemento, tipo_chave, foto, comissao, salario, hora, hora_entrada, hora_saida, jornada) {
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Registro');
 
@@ -149,13 +171,21 @@ HTML;
 		$('#acessar_painel').val(acessar_painel).change();
 		$('#tipo_chave').val(tipo_chave).change();
 
-		$('#target').attr("src", "images/perfil/" + foto);
+			$('#salario').val(salario);	
+		$('#valor_hora').val(hora);	
+		$('#hora_entrada').val(hora_entrada);	
+		$('#hora_saida').val(hora_saida);	
+		$('#jornada_horas').val(jornada);
+
+		$('#comissao').val(comissao);
+
+		$('#target').attr("src", "../sas/images/perfil/" + foto);
 
 		$('#modalForm').modal('show');
 	}
 
 
-	function mostrar(nome, email, telefone, endereco, ativo, data, senha, nivel, foto, pix, data_nasc, numero, bairro, cidade, estado, cep, acessar_painel, complemento, tipo_chave) {
+	function mostrar(nome, email, telefone, endereco, ativo, data, senha, nivel, foto, pix, data_nasc, numero, bairro, cidade, estado, cep, acessar_painel, complemento, tipo_chave, salario, hora, hora_entrada, hora_saida, jornada) {
 
 		if (pix != '') {
 			$('#pix_dados').text(tipo_chave + ': ' + pix);
@@ -180,7 +210,15 @@ HTML;
 		$('#complemento_dados').text(complemento);
 		$('#acessar_painel_dados').text(acessar_painel);
 
-		$('#foto_dados').attr("src", "images/perfil/" + foto);
+		$('#salario_mostrar').text(salario);
+		$('#hora_mostrar').text(hora);
+		$('#hora_entrada_mostrar').text(hora_entrada);
+		$('#hora_saida_mostrar').text(hora_saida);
+		$('#jornada_mostrar').text(jornada);
+
+		
+
+		$('#foto_dados').attr("src", "../sas/images/perfil/" + foto);
 
 		$('#modalDados').modal('show');
 	}
@@ -200,8 +238,15 @@ HTML;
 		$('#tipo_chave').val('').change();
 		$('#cep').val('');
 		$('#complemento').val('');
+		$('#comissao').val('');
 
-		$('#target').attr("src", "images/perfil/sem-foto.jpg");
+		$('#salario').val('');	
+		$('#valor_hora').val('');
+		$('#hora_entrada').val('');			
+		$('#hora_saida').val('');
+		$('#jornada_horas').val('');
+
+		$('#target').attr("src", "../sas/images/perfil/sem-foto.jpg");
 
 		$('#ids').val('');
 		$('#btn-deletar').hide();
@@ -240,33 +285,32 @@ HTML;
 		}
 	}
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
-
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+	
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -275,16 +319,18 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
-
-	};
+	}
 </script>

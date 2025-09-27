@@ -14,9 +14,7 @@ if ($foto != "sem-foto.png") {
 	@unlink('../../images/contas/' . $foto);
 }
 
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
+
 
 
 if ($quant_recorrencia > 0) {
@@ -27,12 +25,8 @@ if ($quant_recorrencia > 0) {
 		for ($i = 0; $i < $total_reg; $i++) {
 			$hash = @$res[$i]['hash'];
 			$id_conta = @$res[$i]['id'];
-
-			if ($hash != "") {
-				require("../../apis/cancelar_agendamento.php");
-			}
+		
 			$pdo->query("DELETE FROM $tabela WHERE id = '$id_conta'");
-
 		}
 	}
 }

@@ -12,15 +12,9 @@ if (@$usuarios == 'ocultar') {
 	<div class="left-content mt-2">
 		<a class="btn ripple btn-primary text-white" onclick="inserir()" type="button"><i class="fe fe-user-plus me-1"></i>
 			Adicionar <?php echo ucfirst($pag); ?></a>
-
-
-
-
 		<big><a class="btn btn-danger" href="#" onclick="deletarSel()" title="Excluir" id="btn-deletar"
 				style="display:none"><i class="fe fe-trash-2"></i> Deletar</a></big>
-
 	</div>
-
 </div>
 
 
@@ -28,7 +22,6 @@ if (@$usuarios == 'ocultar') {
 	<div class="col-lg-12">
 		<div class="card custom-card">
 			<div class="card-body" id="listar">
-
 			</div>
 		</div>
 	</div>
@@ -38,7 +31,7 @@ if (@$usuarios == 'ocultar') {
 
 <!-- Modal  -->
 <div class="modal fade" id="modalForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<div class="modal-header bg-primary text-white">
 				<h4 class="modal-title" id="exampleModalLabel"><span id="titulo_inserir"></span></h4>
@@ -47,38 +40,38 @@ if (@$usuarios == 'ocultar') {
 			</div>
 			<form id="form">
 				<div class="modal-body">
-
-
 					<div class="row needs-validation was-validated">
 						<div class="col-md-6 mb-2">
-
 							<label>Nome <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
 							<input type="text" class="form-control" id="nome" name="nome" placeholder="Digite o Nome" required>
 						</div>
-
 						<div class="col-md-6 mb-2">
 							<label>Email <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
-							<input type="email" class="form-control" id="email" name="email" placeholder="Digite o Email" required>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+								</div>
+								<input type="email" class="form-control" name="email" id="email" required
+									placeholder="exemplo@gmail.com">
+							</div>
 						</div>
-
-
 					</div>
-
-
 					<div class="row">
-
-						<div class="col-md-3 mb-2 col-6 needs-validation was-validated">
+					<div class="col-md-3 mb-2 col-6">
 							<label>Telefone <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
-							<input type="text" class="form-control" id="telefone" name="telefone" placeholder="Digite o Telefone"
-								required>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+								</div>
+								<input type="text" class="form-control" name="telefone" id="telefone"
+									onkeyup="verificarTelefone('telefone', this.value)" placeholder="(00) 00000-0000">
+							</div>
 						</div>
-
-
 						<div class="col-md-3 mb-2 col-6">
-							<label>Nível</label>
-							<select class="form-select" name="nivel" id="nivel">
+							<label>Cargo</label>
+							<select class="form-select" name="nivel" id="nivel" required="">
 								<?php
-								$query = $pdo->query("SELECT * from cargos order by id desc");
+								$query = $pdo->query("SELECT * from cargos where empresa = '$id_empresa' order by id desc");
 								$res = $query->fetchAll(PDO::FETCH_ASSOC);
 								$linhas = @count($res);
 								if ($linhas > 0) {
@@ -88,30 +81,30 @@ if (@$usuarios == 'ocultar') {
 								} ?>
 							</select>
 						</div>
-
-
-						<div class="col-md-3 mb-2 col-6">
+						<div class="col-md-3 mb-2 ">
 							<label>Mostrar todos os Registros</label>
 							<select class="form-select" name="mostrar_registros" id="mostrar_registros">
 								<option value="Sim">Sim</option>
 								<option value="Não">Não</option>
 							</select>
 						</div>
-
-						<div class="col-md-3 mb-2">
-							<label>Nascimento</label>
-							<input type="date" class="form-control" id="data_nasc" name="data_nasc" placeholder="">
+						<div class="col-md-3 mb-2 ">
+							<label>Data Nascimento</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="data_nasc" id="data_nasc" class="form-control"
+									value="">
+							</div>
 						</div>
-
 					</div>
-
 					<div class="row">
-
 						<div class="col-md-3 mb-2 col-6">
 							<label>CPF</label>
 							<input type="text" class="form-control" id="cpf" name="cpf" placeholder="CPF">
 						</div>
-						<div class="col-md-3 mb-2">
+						<div class="col-md-3 mb-2 col-6">
 							<label>Tipo de Chave</label>
 							<select class="form-select" id="tipo_chave" name="tipo_chave">
 								<option value="">Selecionar Chave</option>
@@ -122,56 +115,39 @@ if (@$usuarios == 'ocultar') {
 								<option value="E-mail">E-mail</option>
 							</select>
 						</div>
-
 						<div class="col-md-6 mb-2 ">
 							<label>Chave Pix</label>
 							<input type="text" class="form-control" id="pix" name="pix" placeholder="Chave Pix">
 						</div>
-
-
 					</div>
-
 					<div class="row">
-
 						<div class="col-md-2 mb-2">
 							<label>CEP</label>
 							<input type="text" class="form-control" id="cep" name="cep" placeholder="CEP"
 								onblur="pesquisacep(this.value);">
 						</div>
-
-
-
 						<div class="col-md-5 mb-2">
 							<label>Rua</label>
 							<input type="text" class="form-control" id="endereco" name="endereco" placeholder="Ex. Rua Central">
 						</div>
-
 						<div class="col-md-2 mb-2">
 							<label>Número</label>
 							<input type="text" class="form-control" id="numero" name="numero" placeholder="1570">
 						</div>
-
 						<div class="col-md-3 mb-2">
 							<label>Complemento</label>
 							<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Bloco B AP 104">
 						</div>
-
-
 					</div>
-
-
 					<div class="row">
-
 						<div class="col-md-4 mb-2">
 							<label>Bairro</label>
 							<input type="text" class="form-control" id="bairro" name="bairro" placeholder="Bairro">
 						</div>
-
 						<div class="col-md-5 mb-2">
 							<label>Cidade</label>
 							<input type="text" class="form-control" id="cidade" name="cidade" placeholder="Cidade">
 						</div>
-
 						<div class="col-md-3 mb-2">
 							<label>Estado</label>
 							<select class="form-select" id="estado" name="estado">
@@ -206,29 +182,17 @@ if (@$usuarios == 'ocultar') {
 								<option value="EX">Estrangeiro</option>
 							</select>
 						</div>
-
-
 					</div>
-
-
-
 					<div class="row">
 						<div class="col-md-8 mb-3">
 							<label>Foto</label>
 							<input type="file" class="form-control" id="foto" name="foto" value="" onchange="carregarImg()">
 						</div>
-
 						<div class="col-md-4 mb-3">
 							<img src="images/sem-foto.jpg" width="80px" id="target">
-
 						</div>
-
-
 					</div>
-
-
 					<input type="hidden" class="form-control" id="id" name="id">
-
 					<br>
 					<small>
 						<div id="mensagem" align="center"></div>
@@ -236,7 +200,6 @@ if (@$usuarios == 'ocultar') {
 				</div>
 				<div class="modal-footer">
 					<button id="btn_salvar" type="submit" class="btn btn-primary">Salvar<i class="fa fa-check ms-2"></i></button>
-
 					<button class="btn btn-primary" type="button" id="btn_carregando">
 						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Carregando...
 					</button>
@@ -260,13 +223,8 @@ if (@$usuarios == 'ocultar') {
 				<button id="btn-fechar-dados" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span
 						class="text-white" aria-hidden="true">&times;</span></button>
 			</div>
-
 			<div class="modal-body">
-
-
 				<div class="row">
-
-
 					<div class="col-md-8">
 						<div class="tile">
 							<div class="table-responsive">
@@ -275,112 +233,79 @@ if (@$usuarios == 'ocultar') {
 										<td style="width: 30%" class="bg-primary text-white">Telefone</td>
 										<td><span id="telefone_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white">Email</td>
 										<td><span id="email_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">CPF</td>
 										<td><span id="cpf_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Nível</td>
 										<td><span id="nivel_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Ativo</td>
 										<td><span id="ativo_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Data Cadastro</td>
 										<td><span id="data_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Data Nascimento</td>
 										<td><span id="data_nasc_dados"></span></td>
 									</tr>
-
-
 									<tr>
 										<td class="bg-primary text-white w_150">Chave Pix</td>
 										<td><span id="pix_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Rua</td>
 										<td><span id="endereco_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Número</td>
 										<td><span id="numero_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Complemento</td>
 										<td><span id="complemento_dados"></span></td>
 									</tr>
-
-
 									<tr>
 										<td class="bg-primary text-white w_150">Bairro</td>
 										<td><span id="bairro_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Cidade</td>
 										<td><span id="cidade_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">Estado</td>
 										<td><span id="estado_dados"></span></td>
 									</tr>
-
 									<tr>
 										<td class="bg-primary text-white w_150">CEP</td>
 										<td><span id="cep_dados"></span></td>
 									</tr>
-
-
-
 								</table>
 							</div>
 						</div>
 					</div>
-
 					<div class="col-md-4">
 						<div class="tile">
 							<div class="table-responsive">
 								<table id="" class="text-left table table-bordered">
-
 									<tr>
 										<td align="center"><img src="" id="foto_dados" width="200px"></td>
 									</tr>
-
-
-
-
 								</table>
 							</div>
 						</div>
 					</div>
-
-
 				</div>
-
-
-
-
-
 			</div>
-
 		</div>
 	</div>
 </div>
@@ -394,33 +319,26 @@ if (@$usuarios == 'ocultar') {
 		<div class="modal-content">
 			<div class="modal-header bg-primary text-white">
 				<h4 class="modal-title" id="exampleModalLabel"><span id="nome_permissoes"></span>
-
 					<span style="position:absolute; right:45px">
 						<input class="form-check-input" type="checkbox" id="input-todos" onchange="marcarTodos()">
 						<label class="">Marcar Todos</label>
 					</span>
-
 				</h4>
 				<button style="" id="btn-fechar-arquivos" aria-label="Close" class="btn-close" data-bs-dismiss="modal"
 					type="button"><span class="text-white" aria-hidden="true">&times;</span></button>
 			</div>
-
 			<div class="modal-body">
 				<div id="listar_permissoes">
-
 				</div>
-
 				<br>
 				<input type="hidden" name="id" id="id_permissoes">
 				<small>
 					<div id="mensagem_permissao" align="center" class="mt-3"></div>
 				</small>
 			</div>
-
 		</div>
 	</div>
 </div>
-
 
 <!-- Modal Arquivos -->
 <div class="modal fade" id="modalArquivos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -433,7 +351,6 @@ if (@$usuarios == 'ocultar') {
 			</div>
 			<form id="form-arquivos" method="post">
 				<div class="modal-body">
-
 					<div class="row">
 						<div class="col-md-8">
 							<div class="form-group">
@@ -447,45 +364,35 @@ if (@$usuarios == 'ocultar') {
 								<img src="images/arquivos/sem-foto.png" width="60px" id="target-arquivos">
 							</div>
 						</div>
-
-
-
-
 					</div>
-
 					<div class="row">
 						<div class="col-md-8">
 							<input type="text" class="form-control" name="nome-arq" id="nome-arq" placeholder="Nome do Arquivo * "
 								required>
 						</div>
-
 						<div class="col-md-4">
-							<button type="submit" class="btn btn-primary">Inserir</button>
+							<button id="btn_inserir" type="submit" class="btn btn-primary">Inserir <i class="fa-solid fa-check ms-2"></i></button>
+							<button class="btn btn-primary" type="button" id="btn_carregando_inserir" style="display: none">
+								<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Inserindo...
+							</button>
 						</div>
 					</div>
-
 					<hr>
-
 					<small>
 						<div id="listar-arquivos"></div>
 					</small>
-
 					<br>
 					<small>
 						<div align="center" id="mensagem-arquivo"></div>
 					</small>
-
 					<input type="hidden" class="form-control" name="id-arquivo" id="id-arquivo">
-
-
 				</div>
 			</form>
 		</div>
 	</div>
 
 
-	<script type="text/javascript">var pag = "<?= $pag ?>"</script>
-	<script src="js/ajax.js"></script>
+
 
 
 
@@ -497,40 +404,32 @@ if (@$usuarios == 'ocultar') {
 				method: 'POST',
 				data: { id },
 				dataType: "html",
-
 				success: function (result) {
 					$("#listar_permissoes").html(result);
 					$('#mensagem_permissao').text('');
 				}
 			});
 		}
-
 		function adicionarPermissao(id, usuario) {
 			$.ajax({
 				url: 'paginas/' + pag + "/add_permissao.php",
 				method: 'POST',
 				data: { id, usuario },
 				dataType: "html",
-
 				success: function (result) {
 					listarPermissoes(usuario);
 				}
 			});
 		}
-
-
 		function marcarTodos() {
 			let checkbox = document.getElementById('input-todos');
 			var usuario = $('#id_permissoes').val();
-
 			if (checkbox.checked) {
 				adicionarPermissoes(usuario);
 			} else {
 				limparPermissoes(usuario);
 			}
 		}
-
-
 		function adicionarPermissoes(id_usuario) {
 
 			$.ajax({
@@ -616,72 +515,15 @@ if (@$usuarios == 'ocultar') {
 
 
 	<script type="text/javascript">
-		$("#form-arquivos").submit(function () {
-			event.preventDefault();
-			var formData = new FormData(this);
-
-			$.ajax({
-				url: 'paginas/' + pag + "/arquivos.php",
-				type: 'POST',
-				data: formData,
-
-				success: function (mensagem) {
-					$('#mensagem-arquivo').text('');
-					$('#mensagem-arquivo').removeClass()
-					if (mensagem.trim() == "Inserido com Sucesso") {
-						//$('#btn-fechar-arquivos').click();
-						$('#nome-arq').val('');
-						$('#arquivo_conta').val('');
-						$('#target-arquivos').attr('src', 'images/arquivos/sem-foto.png');
-						listarArquivos();
-					} else {
-						$('#mensagem-arquivo').addClass('text-danger')
-						$('#mensagem-arquivo').text(mensagem)
-					}
-
-				},
-
-				cache: false,
-				contentType: false,
-				processData: false,
-
-			});
-
-		});
-	</script>
-
-
-	<script type="text/javascript">
-		function listarArquivos() {
-			var id = $('#id-arquivo').val();
-			$.ajax({
-				url: 'paginas/' + pag + "/listar-arquivos.php",
-				method: 'POST',
-				data: { id },
-				dataType: "text",
-
-				success: function (result) {
-					$("#listar-arquivos").html(result);
-				}
-			});
-		}
-
-	</script>
-
-	<script type="text/javascript">
 		function carregarImg() {
 			var target = document.getElementById('target');
 			var file = document.querySelector("#foto").files[0];
-
 			var reader = new FileReader();
-
 			reader.onloadend = function () {
 				target.src = reader.result;
 			};
-
 			if (file) {
 				reader.readAsDataURL(file);
-
 			} else {
 				target.src = "";
 			}
@@ -760,3 +602,8 @@ if (@$usuarios == 'ocultar') {
 		};
 
 	</script>
+
+
+
+<script type="text/javascript">var pag = "<?= $pag ?>"</script>
+	<script src="js/ajax.js"></script>

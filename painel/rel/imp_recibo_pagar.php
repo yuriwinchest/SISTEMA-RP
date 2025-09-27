@@ -1,5 +1,9 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 include('../../conexao.php');
+
+include('../buscar_config.php');
 
 $id = $_POST['id'];
 
@@ -16,6 +20,10 @@ $juros = $res[0]['juros'];
 $desconto = $res[0]['desconto'];
 $taxa = $res[0]['taxa'];
 $obs = $res[0]['obs'];
+
+if($subtotal == ""){
+	$subtotal = $valor;
+}
 
 $dataF = implode('/', array_reverse(@explode('-', $data)));
 
@@ -157,7 +165,7 @@ if($fornecedor != 0 || $funcionario != 0){
 <table class="printer-ticket">
 
 	<tr>
-		<th class="ttu" class="title" colspan="3"><img style="margin-top: 10px; margin-left: 50px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="180px">
+		<th class="ttu" class="title" colspan="3"><img style="margin-top: 10px; margin-left: 50px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="180px">
 		</th>
 	</tr>
 

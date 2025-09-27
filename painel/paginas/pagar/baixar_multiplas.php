@@ -1,19 +1,12 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'pagar';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $id_usuario = $_SESSION['id'];
 
-//verificar caixa aberto
-$query1 = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and data_fechamento is null order by id desc limit 1");
-$res1 = $query1->fetchAll(PDO::FETCH_ASSOC);
-if (@count($res1) > 0) {
-	$id_caixa = @$res1[0]['id'];
-} else {
-	$id_caixa = 0;
-}
-//  
 
 $id = $_POST['novo_id'];
 
@@ -40,11 +33,6 @@ $vencimento = $res[0]['vencimento'];
 $quant_recorrencia = @$res[0]['quant_recorrencia'];
 $recorrencia_inf = @$res[0]['recorrencia_inf'];
 
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
-
-
 
 
 //CRIAR A PRÓXIMA CONTA A PAGAR
@@ -68,16 +56,13 @@ if ($dias_frequencia == 30 || $dias_frequencia == 31) {
 
 
 if (@$dias_frequencia > 0 and $recorrencia_inf == 'Não' and ($quant_recorrencia == '' || $quant_recorrencia == '0')) {
-	$pdo->query("INSERT INTO $tabela set descricao = '$descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$valor_antigo', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$saida_antiga', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', usuario_lanc = '$id_usuario', caixa = '$id_caixa', hora = curTime(), recorrencia_inf = '$recorrencia_inf'");
+	$pdo->query("INSERT INTO $tabela set descricao = '$descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$valor_antigo', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$saida_antiga', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', usuario_lanc = '$id_usuario', hora = curTime(), recorrencia_inf = '$recorrencia_inf', empresa = '$id_empresa', hora_alerta = '$hora_random'");
 	$id_ult_registro = $pdo->lastInsertId();
-
-
-
-
 }
 
 
+$pdo->query("UPDATE $tabela SET data_pgto = curDate(), usuario_pgto = '$id_usuario', pago = 'Sim', hora = curTime() where id = '$id' and pago != 'Sim'");
 
-$pdo->query("UPDATE $tabela SET data_pgto = curDate(), usuario_pgto = '$id_usuario', pago = 'Sim', caixa = '$id_caixa', hora = curTime() where id = '$id' and pago != 'Sim'");
 
+echo 'Baixado com Sucesso';
 ?>

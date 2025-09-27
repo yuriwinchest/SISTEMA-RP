@@ -36,7 +36,7 @@ if (@$fornecedores == 'ocultar') {
 
 <!-- Modal Principal -->
 <div class="modal fade" id="modalForm" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg">
+	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<div class="modal-header bg-primary text-white">
 				<h4 class="modal-title" id="exampleModalLabel"><span id="titulo_inserir"></span></h4>
@@ -45,41 +45,51 @@ if (@$fornecedores == 'ocultar') {
 			</div>
 			<form id="form">
 				<div class="modal-body">
-
-
-					<div class="row">
-						<div class="col-md-6 mb-2 needs-validation was-validated">
-							<label>Nome <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
-							<input type="text" class="form-control" id="nome" name="nome" placeholder="Digite o Nome" required>
+					<div class="row needs-validation was-validated">
+						<div class="col-md-6 mb-2 ">
+							<label>Empresa <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
+							<input type="text" class="form-control" id="nome" name="nome" placeholder="Digite o nome da empresa" required>
 						</div>
-
-						<div class="col-md-6">
-							<label>Email</label>
-							<input type="email" class="form-control" id="email" name="email" placeholder="Digite o Email">
+						<div class="col-md-6 mb-2 ">
+							<label>Email da Empresa <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+								</div>
+								<input type="email" class="form-control" name="email" id="email" required
+									placeholder="empresa@gmail.com">
+							</div>
 						</div>
-
-
 					</div>
-
-
 					<div class="row">
-
-						<div class="col-md-3 mb-2 col-6 needs-validation was-validated">
+					<div class="col-md-3 mb-2 ">
 							<label>Telefone <span class="text-danger" style="font-size: 9px">(Obrigatório)</span></label>
-							<input type="text" class="form-control" id="telefone" name="telefone" placeholder="Telefone" required>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+								</div>
+								<input type="text" class="form-control" name="telefone" id="telefone" onkeyup="verificarTelefone('telefone', this.value)" placeholder="(00) 00000-0000">
+							</div>
 						</div>
-
-						<div class="col-md-4 mb-2 col-6">
+						<div class="col-md-4 mb-2 col-10">
 							<label>CNPJ</label>
 							<input type="text" class="form-control" id="cnpj" name="cnpj" placeholder="CNPJ">
 						</div>
-
-						<div class="col-md-1 col-1" style="margin-top: 28px; margin-left: -10px">
+						<div class="col-md-1 col-2" style="margin-top: 28px; margin-left: -10px">
 							<a title="Buscar CNPJ" class="btn btn-primary" href="#" onclick="buscarCNPJ()" class="btn btn-primary"> <i
 									class="bi bi-search"></i> </a>
 						</div>
-
-
+						<div class="col-md-4 mb-2">
+							<label>Vendedor <small class="text-muted">(Nome do vendedor)</small></label>
+							<div class="input-group">
+								<input type="text" class="form-control" id="nome_vendedor" name="nome_vendedor" placeholder="Digite o nome do vendedor">
+								<button type="button" class="btn btn-primary" title="Buscar Fornecedor" onclick="buscarPorVendedor()">
+									<i class="bi bi-search"></i>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="row">
 						<div class="col-md-4 mb-2">
 							<label>Tipo de Chave</label>
 							<select class="form-select" id="tipo_chave" name="tipo_chave">
@@ -91,36 +101,27 @@ if (@$fornecedores == 'ocultar') {
 								<option value="E-mail">E-mail</option>
 							</select>
 						</div>
-
-
-
-
-
 					</div>
-
 					<div class="row">
-						<div class="col-md-9 col-6">
+						<div class="col-md-3 mb-2">
+							<label>Telefone do Vendedor <small class="text-muted">(Contato do vendedor)</small></label>
+							<input type="text" class="form-control" id="telefone_vendedor" name="telefone_vendedor" placeholder="(00) 00000-0000">
+						</div>
+						<div class="col-md-6 col-6">
 							<label>Pix</label>
 							<input type="text" class="form-control" id="pix" name="pix" placeholder="Chavew Pix">
 						</div>
-
-						<div class="col-md-3 mb-2">
+						<div class="col-md-3 col-6 mb-2">
 							<label>CEP</label>
 							<input type="text" class="form-control" id="cep" name="cep" placeholder="CEP"
 								onblur="pesquisacep(this.value);">
 						</div>
-
 					</div>
-
 					<div class="row">
-
-
-
 						<div class="col-md-7 mb-2">
 							<label>Rua</label>
 							<input type="text" class="form-control" id="endereco" name="endereco" placeholder="Ex. Rua Central">
 						</div>
-
 						<div class="col-md-2 mb-2">
 							<label>Número</label>
 							<input type="text" class="form-control" id="numero" name="numero" placeholder="1580">
@@ -129,23 +130,16 @@ if (@$fornecedores == 'ocultar') {
 							<label>Complemento</label>
 							<input type="text" class="form-control" id="complemento" name="complemento" placeholder="Bloco B AP 104">
 						</div>
-
-
 					</div>
-
-
 					<div class="row">
-
 						<div class="col-md-4 mb-2">
 							<label>Bairro</label>
 							<input type="text" class="form-control" id="bairro" name="bairro" placeholder="Bairro">
 						</div>
-
 						<div class="col-md-4 mb-2">
 							<label>Cidade</label>
 							<input type="text" class="form-control" id="cidade" name="cidade" placeholder="Cidade">
 						</div>
-
 						<div class="col-md-4 mb-2">
 							<label>Estado</label>
 							<select class="form-select" id="estado" name="estado">
@@ -180,13 +174,8 @@ if (@$fornecedores == 'ocultar') {
 								<option value="EX">Estrangeiro</option>
 							</select>
 						</div>
-
-
 					</div>
-
-
 					<input type="hidden" class="form-control" id="id" name="id">
-
 					<br>
 					<small>
 						<div id="mensagem" align="center"></div>
@@ -196,7 +185,6 @@ if (@$fornecedores == 'ocultar') {
 					<button type="submit" id="btn_salvar" class="btn btn-primary">Salvar<i
 							class="fa-solid fa-check ms-2"></i>
 						</button>
-
 						<button class="btn btn-primary" type="button" id="btn_carregando" style="display: none;">
 						<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...
 					</button>
@@ -219,30 +207,23 @@ if (@$fornecedores == 'ocultar') {
 				<button id="btn-fechar-dados" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span
 						class="text-white" aria-hidden="true">&times;</span></button>
 			</div>
-
 			<div class="modal-body">
-
-
 				<div class="col-md-12">
 					<div class="tile">
 						<div class="table-responsive">
 							<table id="" class="text-left table table-bordered">
-
 								<tr>
 									<td class="bg-primary text-white">Telefone</td>
 									<td><span id="telefone_dados"></span></td>
 								</tr>
-
 								<tr>
-									<td class="bg-primary text-white">Email</td>
+									<td class="bg-primary text-white">Email da Empresa</td>
 									<td><span id="email_dados"></span></td>
 								</tr>
-
 								<tr>
 									<td class="bg-primary text-white w_150">Chave Pix</td>
 									<td><span id="pix_dados"></span></td>
 								</tr>
-
 								<tr>
 									<td class="bg-primary text-white w_150">Data Cadastro</td>
 									<td><span id="data_dados"></span></td>
@@ -252,6 +233,14 @@ if (@$fornecedores == 'ocultar') {
 									<td><span id="cnpj_dados"></span></td>
 								</tr>
 								<tr>
+									<td class="bg-primary text-white w_150">Vendedor</td>
+									<td><span id="nome_vendedor_dados"></span></td>
+								</tr>
+								<tr>
+									<td class="bg-primary text-white w_150">Telefone do Vendedor</td>
+									<td><span id="telefone_vendedor_dados"></span></td>
+								</tr>
+								<tr>
 									<td class="bg-primary text-white w_150">CEP</td>
 									<td><span id="cep_dados"></span></td>
 								</tr>
@@ -259,7 +248,6 @@ if (@$fornecedores == 'ocultar') {
 									<td class="bg-primary text-white w_150">Endereço</td>
 									<td><span id="endereco_dados"></span></td>
 								</tr>
-
 								<tr>
 									<td class="bg-primary text-white w_150">Número</td>
 									<td><span id="numero_dados"></span></td>
@@ -268,38 +256,26 @@ if (@$fornecedores == 'ocultar') {
 									<td class="bg-primary text-white w_150">Complemento</td>
 									<td><span id="complemento_dados"></span></td>
 								</tr>
-
-
 								<tr>
 									<td class="bg-primary text-white w_150">Bairro</td>
 									<td><span id="bairro_dados"></span></td>
 								</tr>
-
 								<tr>
 									<td class="bg-primary text-white w_150">Cidade</td>
 									<td><span id="cidade_dados"></span></td>
 								</tr>
-
 								<tr>
 									<td class="bg-primary text-white w_150">Estado</td>
 									<td><span id="estado_dados"></span></td>
 								</tr>
-
-
-
-
 							</table>
 						</div>
 					</div>
 				</div>
-
-
 			</div>
-
 		</div>
 	</div>
 </div>
-
 
 <!-- Modal Arquivos -->
 <div class="modal fade" id="modalArquivos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -312,7 +288,6 @@ if (@$fornecedores == 'ocultar') {
 			</div>
 			<form id="form-arquivos" method="post">
 				<div class="modal-body">
-
 					<div class="row">
 						<div class="col-md-8">
 							<div class="form-group">
@@ -326,41 +301,34 @@ if (@$fornecedores == 'ocultar') {
 								<img src="images/arquivos/sem-foto.png" width="60px" id="target-arquivos">
 							</div>
 						</div>
-
-
-
-
 					</div>
-
 					<div class="row">
 						<div class="col-md-8">
 							<input type="text" class="form-control" name="nome-arq" id="nome-arq" placeholder="Nome do Arquivo * "
 								required>
 						</div>
-
 						<div class="col-md-4">
-							<button type="submit" class="btn btn-primary">Inserir</button>
+							<button id="btn_inserir" type="submit" class="btn btn-primary">Inserir <i class="fa-solid fa-check ms-2"></i></button>
+							<button class="btn btn-primary" type="button" id="btn_carregando_inserir" style="display: none">
+								<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Inserindo...
+							</button>
 						</div>
 					</div>
-
 					<hr>
-
 					<small>
 						<div id="listar-arquivos"></div>
 					</small>
-
 					<br>
 					<small>
 						<div align="center" id="mensagem-arquivo"></div>
 					</small>
-
 					<input type="hidden" class="form-control" name="id-arquivo" id="id-arquivo">
-
-
 				</div>
 			</form>
 		</div>
 	</div>
+
+
 
 
 
@@ -420,61 +388,6 @@ if (@$fornecedores == 'ocultar') {
 
 
 
-	<script type="text/javascript">
-		$("#form-arquivos").submit(function () {
-			event.preventDefault();
-			var formData = new FormData(this);
-
-			$.ajax({
-				url: 'paginas/' + pag + "/arquivos.php",
-				type: 'POST',
-				data: formData,
-
-				success: function (mensagem) {
-					$('#mensagem-arquivo').text('');
-					$('#mensagem-arquivo').removeClass()
-					if (mensagem.trim() == "Inserido com Sucesso") {
-						//$('#btn-fechar-arquivos').click();
-						$('#nome-arq').val('');
-						$('#arquivo_conta').val('');
-						$('#target-arquivos').attr('src', 'images/arquivos/sem-foto.png');
-						listarArquivos();
-					} else {
-						$('#mensagem-arquivo').addClass('text-danger')
-						$('#mensagem-arquivo').text(mensagem)
-					}
-
-				},
-
-				cache: false,
-				contentType: false,
-				processData: false,
-
-			});
-
-		});
-	</script>
-
-	<script type="text/javascript">
-		function listarArquivos() {
-			var id = $('#id-arquivo').val();
-			$.ajax({
-				url: 'paginas/' + pag + "/listar-arquivos.php",
-				method: 'POST',
-				data: { id },
-				dataType: "text",
-
-				success: function (result) {
-					$("#listar-arquivos").html(result);
-				}
-			});
-		}
-
-	</script>
-
-
-
-
 	<script>
 		function buscarCNPJ() {
 
@@ -509,6 +422,123 @@ if (@$fornecedores == 'ocultar') {
 				alert("Por favor, insira um CNPJ válido com 14 dígitos.");
 			}
 		}
+	</script>
+
+
+
+<script type="text/javascript">
+
+	function limpa_formulário_cep() {
+		//Limpa valores do formulário de cep.
+		document.getElementById('endereco').value = ("");
+		document.getElementById('bairro').value = ("");
+		document.getElementById('cidade').value = ("");
+		document.getElementById('estado').value = ("");
+		//document.getElementById('ibge').value=("");
+	}
+
+	function meu_callback(conteudo) {
+		if (!("erro" in conteudo)) {
+			//Atualiza os campos com os valores.
+			document.getElementById('endereco').value = (conteudo.logradouro);
+			document.getElementById('bairro').value = (conteudo.bairro);
+			document.getElementById('cidade').value = (conteudo.localidade);
+			document.getElementById('estado').value = (conteudo.uf);
+			//document.getElementById('ibge').value=(conteudo.ibge);
+		} //end if.
+		else {
+			//CEP não Encontrado.
+			limpa_formulário_cep();
+			alert("CEP não encontrado.");
+		}
+	}
+
+
+	function pesquisacep(valor) {
+
+		//Nova variável "cep" somente com dígitos.
+		var cep = valor.replace(/\D/g, '');
+
+		//Verifica se campo cep possui valor informado.
+		if (cep != "") {
+
+			//Expressão regular para validar o CEP.
+			var validacep = /^[0-9]{8}$/;
+
+			//Valida o formato do CEP.
+			if (validacep.test(cep)) {
+
+				//Preenche os campos com "..." enquanto consulta webservice.
+				document.getElementById('endereco').value = "...";
+				document.getElementById('bairro').value = "...";
+				document.getElementById('cidade').value = "...";
+				document.getElementById('estado').value = "...";
+				//document.getElementById('ibge').value="...";
+
+				//Cria um elemento javascript.
+				var script = document.createElement('script');
+
+				//Sincroniza com o callback.
+				script.src = 'https://viacep.com.br/ws/' + cep + '/json/?callback=meu_callback';
+
+				//Insere script no documento e carrega o conteúdo.
+				document.body.appendChild(script);
+
+			} //end if.
+			else {
+				//cep é inválido.
+				limpa_formulário_cep();
+				alert("Formato de CEP inválido.");
+			}
+		} //end if.
+		else {
+			//cep sem valor, limpa formulário.
+			limpa_formulário_cep();
+		}
+	};
+
+</script>
+
+
+	<!-- Função simplificada para buscar fornecedor por nome do vendedor -->
+	<script>
+	function buscarPorVendedor() {
+		var nome = $('#nome_vendedor').val();
+		if (nome.length >= 3) {
+			$.ajax({
+				url: 'paginas/fornecedores/buscar_por_vendedor.php',
+				method: 'POST',
+				data: { nome_vendedor: nome },
+				dataType: "json",
+				success: function(response) {
+					if (response.status === 'success' && response.fornecedor) {
+						// Preenche campos automaticamente
+						$('#nome').val(response.fornecedor.nome);
+						$('#telefone').val(response.fornecedor.telefone);
+						$('#email').val(response.fornecedor.email);
+						$('#cnpj').val(response.fornecedor.cnpj);
+						$('#pix').val(response.fornecedor.pix);
+						$('#cep').val(response.fornecedor.cep);
+						$('#endereco').val(response.fornecedor.endereco);
+						$('#numero').val(response.fornecedor.numero);
+						$('#bairro').val(response.fornecedor.bairro);
+						$('#cidade').val(response.fornecedor.cidade);
+						$('#estado').val(response.fornecedor.estado);
+						$('#complemento').val(response.fornecedor.complemento);
+						$('#telefone_vendedor').val(response.fornecedor.telefone_vendedor);
+						alertSucesso('Fornecedor encontrado!');
+					} else {
+						alertWarning('Fornecedor não encontrado!');
+					}
+				},
+				error: function() {
+					alertErro('Erro na busca.');
+				}
+			});
+		} else {
+			alertWarning('Digite pelo menos 3 caracteres.');
+		}
+	}
 	</script>
 
 	<script type="text/javascript">var pag = "<?= $pag ?>"</script>

@@ -2,6 +2,7 @@
 @session_start();
 $mostrar_registros = @$_SESSION['registros'];
 $id_usuario = @$_SESSION['id'];
+$id_empresa = @$_SESSION['empresa'];
 
 require_once("../../conexao.php");
 
@@ -12,7 +13,12 @@ $filtro_tipo = "receber";
 $filtro_lancamento = urlencode($_POST['filtro_lancamento']);
 $filtro_pendentes = $_POST['filtro_pendentes'];
 
-$html = file_get_contents($url_sistema."painel/rel/sintetico_recebimentos.php?filtro_data=$filtro_data&dataInicial=$dataInicial&dataFinal=$dataFinal&filtro_tipo=$filtro_tipo&filtro_lancamento=$filtro_lancamento&filtro_pendentes=$filtro_pendentes&mostrar_registros=$mostrar_registros&id_usuario=$id_usuario");
+
+include('../buscar_config.php');
+$token_rel = "M543661";
+ob_start();
+include("sintetico_recebimentos.php");
+$html = ob_get_clean();
 
 //CARREGAR DOMPDF
 require_once '../dompdf/autoload.inc.php';

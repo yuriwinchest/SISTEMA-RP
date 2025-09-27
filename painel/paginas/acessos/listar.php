@@ -134,33 +134,32 @@ HTML;
 	}
 
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
 
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -169,16 +168,18 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
-
-	};
+	}
 </script>

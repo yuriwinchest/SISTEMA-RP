@@ -3,21 +3,24 @@
 require_once("../../../conexao.php");
 $nivel_usuario = $_SESSION['nivel'];
 $id_usuario = $_SESSION['id'];
+$id_empresa = @$_SESSION['empresa'];
 
-
+require_once("../../buscar_config.php");
 
 $pagina = 'caixas';
 
 $data_atual = date('Y-m-d');
 
 //trazer valor fechamento ultimo caixa
-$query = $pdo->query("SELECT * from $pagina order by id desc limit 1");
+$query = $pdo->query("SELECT * from $pagina where empresa = '$id_empresa' order by id desc limit 1");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $ultimo_valor_fechado = @$res[0]['valor_fechamento'];
 
 if ($ultimo_valor_fechado == "") {
 	$ultimo_valor_fechado = 0;
 }
+
+$ultimo_valor_fechadoF = @number_format($ultimo_valor_fechado, 2, ',', '.');
 
 $dataInicial = @$_POST['p1'];
 $dataFinal = @$_POST['p2'];
@@ -37,9 +40,9 @@ if ($nivel_usuario != 'Administrador' and $nivel_usuario != 'Gerente') {
 }
 
 if ($operador == "") {
-	$query = $pdo->query("SELECT * from $pagina WHERE data_abertura >= '$dataInicial' and data_abertura <= '$dataFinal' order by id desc ");
+	$query = $pdo->query("SELECT * from $pagina WHERE (data_abertura >= '$dataInicial' and data_abertura <= '$dataFinal' or data_fechamento is null) and empresa = '$id_empresa' order by id desc ");
 } else {
-	$query = $pdo->query("SELECT * from $pagina WHERE data_abertura >= '$dataInicial' and data_abertura <= '$dataFinal' and operador = '$operador' order by id desc ");
+	$query = $pdo->query("SELECT * from $pagina WHERE (data_abertura >= '$dataInicial' and data_abertura <= '$dataFinal' or data_fechamento is null) and operador = '$operador' and empresa = '$id_empresa'  order by id desc ");
 }
 
 
@@ -56,22 +59,7 @@ $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $total_reg = @count($res);
 if ($total_reg > 0) {
 	echo <<<HTML
-	<table class="table table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela">
-		<thead> 
-			<tr> 				
-				<th>Operador</th>				
-				<th class="esc">Data Abertura</th>					
-				<th class="esc">Valor Abertura</th> 
-				<th class="esc">Valor Fechamento</th> 
-				<th class="esc">Sangrias</th> 
-				<th class="esc">Quebra</th>	
-				<th class="esc">Aberto Por</th> 
-				<th class="esc">Fechado Por</th> 	
-				<th>Ações</th>
-			</tr> 
-
-		</thead> 
-		<tbody> 
+	<div class="row">
 HTML;
 	for ($i = 0; $i < $total_reg; $i++) {
 		foreach ($res[$i] as $key => $value) {
@@ -145,14 +133,14 @@ HTML;
 		}
 
 		//pegar a forma de pagamento dinheiro
-		$query2 = $pdo->query("SELECT * FROM formas_pgto where nome LIKE '%Dinheiro%'");
+		$query2 = $pdo->query("SELECT * FROM formas_pgto where nome LIKE '%Dinheiro%' and empresa = '$id_empresa'");
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
-		$pgto_dinheiro = $res2[0]['id'];
+		$pgto_dinheiro = @$res2[0]['id'];
 
 		//buscar total movimentado pelo caixa
 		//totalizar recebimentos
 		$total_recebido = 0;
-		$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$pgto_dinheiro' and caixa = '$id'");
+		$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$pgto_dinheiro' and caixa = '$id' and empresa = '$id_empresa'");
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 		if (@count($res2) > 0) {
 			for ($i2 = 0; $i2 < @count($res2); $i2++) {
@@ -163,7 +151,7 @@ HTML;
 
 		//totalizar saidas
 		$total_saidas = 0;
-		$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$pgto_dinheiro' and caixa = '$id'");
+		$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$pgto_dinheiro' and caixa = '$id' and empresa = '$id_empresa'");
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 		if (@count($res2) > 0) {
 			for ($i2 = 0; $i2 < @count($res2); $i2++) {
@@ -185,83 +173,94 @@ HTML;
 		}
 		$total_sangriasF = @number_format($total_sangrias, 2, ',', '.');
 
-
-
 		$total_caixa = $total_recebido - $total_saidas + $valor_abertura - $total_sangrias;
 
+		$total_caixaF = @number_format($total_caixa, 2, ',', '.');
 
+
+		if($data_fechamento != ""){
+			$status = 'Fechado';
+			$cor_caixa = 'text-danger';
+		}else{
+			$status = 'Aberto';
+			$cor_caixa = 'verde';
+		}
 
 		echo <<<HTML
-
-			<tr> 
-
-				<td>
-
-
-				<i class="fa fa-square {$classe_aberto} mr-1"></i> {$nome_operador} </td> 
-				
-				<td class="esc">{$data_aberturaF}</td>				
-				<td class="esc">R$ {$valor_aberturaF}</td>
-				<td class="esc">R$ {$valor_fechamentoF}</td>
-				<td class="esc">R$ {$total_sangriasF}</td>
-				<td class="esc {$classe_quebra}">R$ {$quebraF}</td>
-				<td class="esc">{$nome_usu_abertura}</td>
-				<td class="esc">{$nome_usu_fechamento}</td>
-				
-
-				<td>
-
-					<big><a class="{$ocultar} btn btn-info-light btn-sm" href="#" onclick="editar('{$id}', '{$operador}', '{$data_abertura}','{$valor_abertura}','{$obs}')" title="Editar Dados"><i class="fa fa-edit "></i></a></big>
-				
-
-	
-		<big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can text-danger"></i></a></big>
-
-
-
-
-
-		<big><a class="{$ocultar} btn btn-success-light btn-sm" href="#" onclick="fechamento('{$id}', '{$nome_operador}', '{$valor_abertura}', '{$total_caixa}')" title="Fechar Caixa"><i class="fa fa-check-square "></i></a></big>
-
-
-		<big><a class="{$ocultar} btn btn-success-light btn-sm" href="#" onclick="sangria('{$id}', '{$nome_operador}')" title="Sangria"><i class="fa fa-money  "></i></a></big>
-
-
-
-		
-
-		<form   method="POST" action="rel/detalhamento_caixa_class.php" target="_blank" style="display:inline-block">
-					<input type="hidden" name="id" value="{$id}">
-					<button class="btn btn-danger-light btn-sm" title="Detalhamento do Caixa"><i class="fa fa-file-pdf-o " ></i></button>
-					</form>
-
-
 			
+			<div class="col-12 col-md-6 col-lg-4 mb-4">
+			<div class="card shadow-sm" style="border-left: 4px solid #5cd3b9; background-color: #fafaea !important;">
+				<div class="card-header bg-primary">
+					<h5 class="card-title mb-0" >
+						<i class="fa fa-square {$classe_aberto} mr-1"></i> 
+						{$nome_operador} - <span class="{$cor_caixa}">(Caixa {$status})</span>
+					</h5>
+				</div>
+				<div class="card-body">
+					<div class="mb-2">
+						<strong>Data Abertura:</strong> {$data_aberturaF}
+					</div>
+					<div class="mb-2">
+						<strong>Valor Abertura:</strong> R$ {$valor_aberturaF}
+					</div>
+					<div class="mb-2">
+						<strong>Valor Fechamento:</strong> R$ {$valor_fechamentoF}
+					</div>
+					<div class="mb-2">
+						<strong>Sangrias:</strong> R$ {$total_sangriasF}
+					</div>
+					<div class="mb-2">
+						<strong>Quebra:</strong> <span class="{$classe_quebra}">R$ {$quebraF}</span>
+					</div>
+					<div class="mb-2">
+						<strong>Aberto Por:</strong> {$nome_usu_abertura}
+					</div>
+					<div class="mb-2">
+						<strong>Fechado Por:</strong> {$nome_usu_fechamento}
+					</div>
+					<div class="mb-2">
+						<strong>Total Caixa:</strong> R$ {$total_caixaF}
+					</div>
+					<div class="mb-2">
+						<strong>Observação:</strong> {$obs}
+					</div>
+					<div class="btn-group" role="group">
+						<a class="{$ocultar} btn btn-info-light btn-sm" href="#" onclick="editar('{$id}', '{$operador}', '{$data_abertura}','{$valor_aberturaF}','{$obs}')" title="Editar Dados">
+							<i class="fa fa-edit"></i>
+						</a>
 
-				</td>  
+						<a href="#" class="{$ocultar} btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir">
+							<i class="fa fa-trash-can text-danger"></i>
+						</a>
 
-			</tr> 
+						<a class="{$ocultar} btn btn-success-light btn-sm" href="#" onclick="fechamento('{$id}', '{$nome_operador}', '{$valor_aberturaF}', '{$total_caixaF}')" title="Fechar Caixa">
+							<i class="fa fa-check-square"></i>
+						</a>
 
+						<a class="{$ocultar} btn btn-success-light btn-sm" href="#" onclick="sangria('{$id}', '{$nome_operador}')" title="Sangria">
+							<i class="fa fa-money"></i>
+						</a>
+
+						<form method="POST" action="rel/detalhamento_caixa_class.php" target="_blank" style="display:inline-block">
+							<input type="hidden" name="id" value="{$id}">
+							<button class="btn btn-dark-light btn-sm" title="Detalhamento do Caixa">
+								<i class="fa fa-file-pdf-o"></i>
+							</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
 HTML;
 	}
-
 	echo <<<HTML
-		</tbody> 
-		<small><div align="center" id="mensagem-excluir"></div></small>
-	</table>
-
-</small>
+		</div>
 HTML;
 } else {
 	echo 'Não possui nenhum registro!';
 }
 
-
-
 ?>
-
-
-
 
 
 <script type="text/javascript">
@@ -271,31 +270,20 @@ HTML;
 			"stateSave": true,
 		});
 		$('#tabela_filter label input').focus();
-
 	});
 
 
 
-
-
-
-
 	function editar(id, operador, data_abertura, valor_abertura, obs) {
-
-
 		$('#id').val(id);
 		$('#operador').val(operador).change();
 		$('#valor_abertura').val(valor_abertura);
 		$('#data_abertura').val(data_abertura);
 		$('#obs').val(obs);
-
 		$('#tituloModal').text('Editar Registro');
 		$('#modalForm').modal('show');
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Registro');
-
-		mascara_moeda('valor_abertura');
-
 	}
 
 
@@ -305,24 +293,13 @@ HTML;
 
 		//Formatar o valor antes de mandar pro campo
 		let numeroFormatado = total_caixa.replace(/\B(?=(\d{3})+(?!\d))/g, '.').replace('.', ',');
-
 		$('#id_fechar').val(id);
 		$('#nome_operador').val(operador);
 		$('#valor_abertura_fechar').val(valor_abertura);
 		$('#total_caixa_fechar').val(numeroFormatado);
-
-
-
 		$('#tituloModalFechar').text('Fechar Caixa');
 		$('#modalFechar').modal('show');
 		$('#mensagem_fechar').text('');
-
-		mascara_moeda('valor_abertura_fechar');
-
-
-
-
-
 	}
 
 
@@ -330,12 +307,9 @@ HTML;
 	function sangria(id, operador) {
 		$('#id_sangria').val(id);
 		$('#nome_operador_sangria').val(operador);
-
 		$('#tituloModalSangria').text('Efetuar Sangria');
 		$('#modalSangria').modal('show');
 		$('#mensagem_sangria').text('');
-
-
 	}
 
 
@@ -343,10 +317,8 @@ HTML;
 	function limparCampos() {
 		$('#id').val('');
 		//$('#operador').val('').change();		
-		$('#valor_abertura').val('<?= $ultimo_valor_fechado ?>');
+		$('#valor_abertura').val('<?= $ultimo_valor_fechadoF ?>');
 		$('#data_abertura').val('<?= $data_atual ?>');
-
-		mascara_moeda('valor_abertura');
 
 		$('#obs').val('');
 		$('#ids').val('');
@@ -380,33 +352,32 @@ HTML;
 		}
 	}
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
 
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -415,16 +386,18 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
-
-	};
+	}
 </script>

@@ -1,14 +1,10 @@
 <?php 
-include('../../conexao.php');
 include('data_formatada.php');
 
-$token_rel = @$_GET['token'];
-if ($token_rel != 'M543664') {
+if ($token_rel != 'M543661') {
 	echo '<script>window.location="../../"</script>';
 	exit();
 }
-
-$id = $_GET['id'];
 
 
 $query = $pdo->query("SELECT * from anotacoes where id = '$id'");
@@ -159,30 +155,30 @@ body {font-family: 'Tw Cen MT', sans-serif;}
 <body>
 <?php 
 if($marca_dagua == 'Sim'){ ?>
-<img class="marca" src="<?php echo $url_sistema ?>img/logo.jpg">	
+<img class="marca" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>">	
 <?php } ?>
 
 
 <div id="header" >
 
-	<div style="border-style: solid; font-size: 10px; height:70px;">
+	<div style="border-style: solid; font-size: 10px; height:55px;">
 		<table style="width: 100%; border: 0px solid #ccc;">
 			<tr>
-				<td style="border: 1px; solid #000; width: 30%; text-align: left;">
-					<img style="margin-top: 0px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="120px">
+				<td style="width: 30%; text-align: left;">
+					<img style="margin-top: 0px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="180px">
 				</td>
 				
 				<td style="text-align: center; font-size: 10px; width: 45%;">
 				
-                   <b><?php echo mb_strtoupper($nome_sistema) ?></b><br>
-                   	CNPJ:	<?php echo mb_strtoupper($cnpj_sistema) ?><br>
-                   	INSTAGRAM: <b><?php echo mb_strtoupper($instagram_sistema) ?></b><br>
-                   	<?php echo mb_strtoupper($endereco_sistema) ?>
+                   <b><?php echo @mb_strtoupper($nome_sistema) ?></b><br>
+                   	CNPJ:	<?php echo @mb_strtoupper($cnpj_sistema) ?><br>
+                   	INSTAGRAM: <b><?php echo @mb_strtoupper($instagram_sistema) ?></b><br>
+                   	<?php echo @mb_strtoupper($endereco_sistema) ?>
  
 				</td>
 					<td style="width: 28%; text-align: right; font-size: 9px;padding-right: 10px;">
 						
-						<?php echo mb_strtoupper($data_hoje) ?>
+						<?php echo @mb_strtoupper($data_hoje) ?>
 					</td>
 			</tr>		
 		</table>
@@ -197,7 +193,7 @@ if($marca_dagua == 'Sim'){ ?>
 <div id="footer" class="row">
 <hr style="margin-bottom: 0;">
 	<table style="width:100%;">
-		<tr style="width:100%;">
+		<tr style="width:100%; background:#FFF">
 			<td style="width:60%; font-size: 10px; text-align: left;"><?php echo $nome_sistema ?> Telefone: <?php echo $telefone_sistema ?></td>
 			<td style="width:40%; font-size: 10px; text-align: right;"><p class="page">Página  </p></td>
 		</tr>

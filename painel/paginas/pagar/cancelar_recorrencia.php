@@ -1,6 +1,9 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'pagar';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 $id = $_POST['id'];
 
@@ -10,7 +13,7 @@ $id_recorrencia = @$res[0]['id_recorrencia'];
 
 
 
-	$query = $pdo->query("SELECT * from $tabela where id_recorrencia = '$id_recorrencia' and pago != 'Sim'");
+	$query = $pdo->query("SELECT * from $tabela where id_recorrencia = '$id_recorrencia' and pago != 'Sim' and empresa = '$id_empresa'");
 		$res = $query->fetchAll(PDO::FETCH_ASSOC);
 		$total_reg = @count($res);
 		if($total_reg > 0){
@@ -18,9 +21,7 @@ $id_recorrencia = @$res[0]['id_recorrencia'];
 				$hash = @$res[$i]['hash'];
 				$id_conta = @$res[$i]['id'];
 
-				if($hash != ""){
-					require("../../apis/cancelar_agendamento.php");
-				}
+				
 				$pdo->query("DELETE FROM $tabela WHERE id = '$id_conta'");
 
 			}

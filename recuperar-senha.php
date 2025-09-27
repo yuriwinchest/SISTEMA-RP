@@ -30,6 +30,17 @@ if($total_reg > 0){
     //echo $reset_link;
     //exit();
 
+      //disparar para o telefone do cliente a recuperação
+    if($api_whatsapp != 'Não' and $telefone != ''){
+
+    $telefone_envio = '55'.preg_replace('/[ ()-]+/' , '' , $telefone);
+    $mensagem = '*'.$nome_sistema.'*%0A';
+    $mensagem .= '🤩 _Link para Recuperação de Senha_ %0A%0A';
+    $mensagem .= $reset_link;         
+    
+    require('painel/apis/texto.php');   
+    }
+
     echo 'Recuperado com Sucesso';
 }else{
     echo 'Esse email não está Cadastrado!';

@@ -93,7 +93,7 @@ $_SESSION['temp_reset_token'] = $_REQUEST['token'];
 					$('#senha').val('');
 					$('#re_senha').val('');
 					alert('Sua Senha foi alterada com Sucesso!!');
-					window.location="index.php";		
+					window.location="login";		
 
 				} else {
 

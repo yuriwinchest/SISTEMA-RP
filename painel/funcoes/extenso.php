@@ -13,7 +13,7 @@ function valor_por_extenso( $v ){
 
         $z = 0;
  
-        $v = number_format( $v, 2, ".", "." );
+        $v = @number_format( $v, 2, ".", "." );
         $int = explode( ".", $v );
  
         for ( $i = 0; $i < count( $int ); $i++ ) 

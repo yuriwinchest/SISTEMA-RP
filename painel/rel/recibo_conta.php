@@ -1,15 +1,26 @@
 <?php
-require_once("../../conexao.php");
 require_once("../funcoes/extenso.php");
-$id = $_GET['id'];
+include('data_formatada.php');
 
-$query = $pdo->query("SELECT * from receber where id = '$id' ");
+if ($token_rel != 'M543661') {
+  echo '<script>window.location="../../"</script>';
+  exit();
+}
+
+$query = $pdo->query("SELECT * from receber where id = '$id' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 if (@count($res) > 0) {
   $descricao = $res[0]['descricao'];
   $pessoa = $res[0]['cliente'];
   $valor = $res[0]['subtotal'];
   $data_pgto = $res[0]['data_pgto'];
+  $ref_pix = $res[0]['ref_pix'];
+  $pago = $res[0]['pago'];
+  $id_empresa = $res[0]['empresa'];
+
+  if($ref_pix != "" and $pago != "Sim"){
+     require('../pagamentos/consultar_pagamento.php');     
+}
 
   $nome_pessoa = 'Sem Registro';
 
@@ -134,7 +145,7 @@ if (@count($res) > 0) {
 
   <div class="receipt-main">
 
-    <img class="imagem" src="<?php echo $url_sistema ?>img/logo.jpg">
+    <img class="imagem" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>">
 
 
 
@@ -171,7 +182,9 @@ if (@count($res) > 0) {
         echo '<br><br>';
       } else {
         ?>
-        <img src="<?php echo $url_sistema ?>/img/assinatura.jpg" width="20%" height=""><br>
+        <?php if($imagem_assinatura != "sem-foto.png" and $imagem_assinatura != ""){ ?>
+        <img src="<?php echo $url_sistema ?>/img/<?php echo $imagem_assinatura ?>" width="20%" height=""><br>
+      <?php } ?>
       <?php } ?>
 
 
@@ -182,7 +195,7 @@ if (@count($res) > 0) {
     <br>
 
     <div align="center">
-      <?php echo mb_strtoupper($nome_sistema) ?>
+      <?php echo @mb_strtoupper($nome_sistema) ?>
       - <?php echo $telefone_sistema ?>
     </div>
 

@@ -1,8 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'receber';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $id_usuario = @$_SESSION['id'];
 
 $hora = date('H');
@@ -28,14 +30,28 @@ $data_pgto = $_POST['data_pgto'];
 $forma_pgto = $_POST['forma_pgto'];
 $frequencia = $_POST['frequencia'];
 $obs = $_POST['obs'];
+$dispositivo = $_POST['dispositivo'];
 $id = $_POST['id'];
 $quant_recorrencia = @$_POST['quant_recorrencia'];
+$data_assinatura = @$_POST['data_assinatura'];
+$api_pagamento_conta = @$_POST['api_pagamento_conta'];
+$pgtos_aceitaveis = @$_POST['pgtos_aceitaveis'];
+
+$taxa_cartao_api_receber = $_POST['taxa_cartao_api_receber'];
+
+$taxa_cartao_api_receber = str_replace(',', '.', $taxa_cartao_api_receber);
+$taxa_cartao_api_receber = str_replace('%', '', $taxa_cartao_api_receber);
+
+
+$frequencia_conta = $_POST['frequencia'];
+if ($quant_recorrencia > 0) {
+$frequencia_conta = 0;
+}
 
 if ($valor == "0,00") {
 	echo 'Você precisa Adicionar um Valor!';
 	exit();
 }
-
 
 
 //VALIDAÇÃO
@@ -45,8 +61,6 @@ if ($quant_recorrencia > 0 and $frequencia == '0') {
 }
 
 $valor = str_replace('.', '', $valor);
-$valor = str_replace(',', '.', $valor);
-
 $valor = str_replace(',', '.', $valor);
 
 $valorF = @number_format($valor, 2, ',', '.');
@@ -65,17 +79,24 @@ if ($frequencia == "") {
 
 if ($data_pgto == "") {
 	$pgto = '';
-	$usu_pgto = '';
+	$usu_pgto = " ,usuario_pgto = '0' ";
 	$pago = 'Não';
 } else {
 	$pgto = " ,data_pgto = '$data_pgto'";
-	$usu_pgto = " ,usuario_pgto = '$id_usuario'";
+	$usu_pgto = " ,usuario_pgto = '$id_usuario' ";
 	$pago = 'Sim';
+}
+
+
+if ($data_assinatura == "") {
+	$sql_data_ass = '';	
+} else {
+	$sql_data_ass = " ,data_assinatura = '$data_assinatura'";	
 }
 
 //validacao
 if ($descricao == "" and $cliente == "0") {
-	echo 'Selecione um Cliente ou uma Descrição!';
+	echo 'Selecione um Cliente ou adicone uma Descrição!';
 	exit();
 }
 
@@ -108,7 +129,7 @@ if ($total_reg > 0) {
 }
 
 
-//SCRIPT PARA SUBIR FOTO NO SERVIDOR
+// SCRIPT PARA SUBIR FOTO NO SERVIDOR
 $nome_img = date('d-m-Y H:i:s') . '-' . @$_FILES['foto']['name'];
 $nome_img = preg_replace('/[ :]+/', '-', $nome_img);
 
@@ -117,49 +138,54 @@ $caminho = '../../images/contas/' . $nome_img;
 $imagem_temp = @$_FILES['foto']['tmp_name'];
 
 if (@$_FILES['foto']['name'] != "") {
-	$ext = pathinfo($nome_img, PATHINFO_EXTENSION);
-	if ($ext == 'png' or $ext == 'jpg' or $ext == 'jpeg' or $ext == 'gif' or $ext == 'pdf' or $ext == 'rar' or $ext == 'zip' or $ext == 'doc' or $ext == 'docx' or $ext == 'webp' or $ext == 'PNG' or $ext == 'JPG' or $ext == 'JPEG' or $ext == 'GIF' or $ext == 'PDF' or $ext == 'RAR' or $ext == 'ZIP' or $ext == 'DOC' or $ext == 'DOCX' or $ext == 'WEBP' or $ext == 'xlsx' or $ext == 'xlsm' or $ext == 'xls' or $ext == 'xml') {
+	$ext = strtolower(pathinfo($nome_img, PATHINFO_EXTENSION)); // Converte a extensão para minúsculas
+	$extensoes_permitidas = ['png', 'jpg', 'jpeg', 'gif', 'pdf', 'rar', 'zip', 'doc', 'docx', 'webp', 'xlsx', 'xlsm', 'xls', 'xml'];
 
-		//EXCLUO A FOTO ANTERIOR
-		if (@$foto != "sem-foto.png") {
+	if (in_array($ext, $extensoes_permitidas)) {
+
+		// EXCLUO A FOTO ANTERIOR
+		if ($foto != "sem-foto.png") {
 			@unlink('../../images/contas/' . $foto);
 		}
 
 		$foto = $nome_img;
 
-		//pegar o tamanho da imagem
+		// pegar o tamanho da imagem
 		list($largura, $altura) = getimagesize($imagem_temp);
 
+		// Redimensionar a imagem se a largura for maior que 1400
 		if ($largura > 1400) {
-			if ($ext == 'png' or $ext == 'jpg' or $ext == 'jpeg' or $ext == 'gif' or $ext == 'webp' or $ext == 'PNG' or $ext == 'JPG' or $ext == 'JPEG' or $ext == 'GIF' or $ext == 'PDF' or $ext == 'RAR' or $ext == 'WEBP') {
+			// Calcular a nova altura mantendo a proporção
+			$nova_largura = 1400;
+			$nova_altura = ($altura / $largura) * $nova_largura;
 
+			// Criar uma nova imagem em branco
+			$image = imagecreatetruecolor($nova_largura, $nova_altura);
 
-
-				if ($ext == 'png') {
-					$image = imagecreatefrompng($imagem_temp);
-				} else if ($ext == 'jpeg' or $ext == 'jpg') {
-					$image = imagecreatefromjpeg($imagem_temp);
-				} else if ($ext == 'gif') {
-					$image = imagecreatefromgif($imagem_temp);
-				} else {
-					die("Formato de imagem não suportado.");
-				}
-
-
-
-				// Reduza a qualidade para 20% ajuste conforme necessário
-				imagejpeg($image, $caminho, 20);
-				imagedestroy($image);
+			// Criar a imagem a partir do arquivo original
+			if ($ext == 'png') {
+				$imagem_original = imagecreatefrompng($imagem_temp);
+				imagealphablending($image, false);
+				imagesavealpha($image, true);
+			} else if ($ext == 'jpeg' || $ext == 'jpg') {
+				$imagem_original = imagecreatefromjpeg($imagem_temp);
+			} else if ($ext == 'gif') {
+				$imagem_original = imagecreatefromgif($imagem_temp);
 			} else {
-				move_uploaded_file($imagem_temp, $caminho);
+				die("Formato de imagem não suportado.");
 			}
 
+			// Redimensionar a imagem
+			imagecopyresampled($image, $imagem_original, 0, 0, 0, 0, $nova_largura, $nova_altura, $largura, $altura);
+
+			// Salvar a imagem com qualidade de 20%
+			imagejpeg($image, $caminho, 20);
+			imagedestroy($imagem_original);
+			imagedestroy($image);
 		} else {
+			// Se a largura não for maior que 1400, apenas move o arquivo
 			move_uploaded_file($imagem_temp, $caminho);
 		}
-
-
-
 	} else {
 		echo 'Extensão de Imagem não permitida!';
 		exit();
@@ -175,10 +201,11 @@ if (@count($res1) > 0) {
 } else {
 	$id_caixa = 0;
 }
+// 
 
 
 if ($id == "") {
-	$query = $pdo->prepare("INSERT INTO $tabela SET descricao = :descricao, cliente = :cliente, valor = :valor, vencimento = '$vencimento' $pgto, data_lanc = curDate(), forma_pgto = '$forma_pgto', frequencia = '$frequencia', obs = :obs, arquivo = '$foto', subtotal = :valor, usuario_lanc = '$id_usuario' $usu_pgto, pago = '$pago', referencia = 'Conta', caixa = '$id_caixa', hora = curTime(), quant_recorrencia = :quant_recorrencia ");
+	$query = $pdo->prepare("INSERT INTO $tabela SET descricao = :descricao, cliente = :cliente, valor = :valor, vencimento = '$vencimento' $pgto, data_lanc = curDate(), forma_pgto = '$forma_pgto', frequencia = '$frequencia_conta', obs = :obs, arquivo = '$foto', subtotal = :valor, usuario_lanc = '$id_usuario' $usu_pgto, pago = '$pago', referencia = 'Conta', hora = curTime(), quant_recorrencia = :quant_recorrencia, caixa = '$id_caixa', empresa = '$id_empresa', hora_alerta = '$hora_random', dispositivo = '$dispositivo', api_pagamento_conta = '$api_pagamento_conta', pgtos_aceitaveis = '$pgtos_aceitaveis', taxa_cartao_api_receber = '$taxa_cartao_api_receber' $sql_data_ass ");
 
 
 	$data_venc = $vencimento;
@@ -206,51 +233,17 @@ if ($id == "") {
 	if (@$dias_frequencia > 0 and $data_pgto != '' and $quant_recorrencia < 0) {
 
 
-		$pdo->query("INSERT INTO $tabela set descricao = '$descricao', cliente = '$cliente', valor = '$valor', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$forma_pgto', arquivo = '$foto', pago = 'Não', referencia = 'Conta', usuario_lanc = '$id_usuario', hora = curTime(), obs = '$obs', caixa = '$id_caixa', quant_recorrencia = '$quant_recorrencia'");
+		$pdo->query("INSERT INTO $tabela set descricao = '$descricao', cliente = '$cliente', valor = '$valor', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$forma_pgto', arquivo = '$foto', pago = 'Não', referencia = 'Conta', usuario_lanc = '$id_usuario', hora = curTime(), obs = '$obs', quant_recorrencia = '$quant_recorrencia', empresa = '$id_empresa', hora_alerta = '$hora_random', dispositivo = '$dispositivo', api_pagamento_conta = '$api_pagamento_conta', pgtos_aceitaveis = '$pgtos_aceitaveis', taxa_cartao_api_receber = '$taxa_cartao_api_receber'");
 		$id_ult_registro = $pdo->lastInsertId();
 
 
 
-		if ($api_whatsapp != 'Não' and $telefone_cliente != '') {
-
-
-			$valorF = @number_format($valor, 2, ',', '.');
-			$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_cliente);
-			$nova_data_vencimentoF = implode('/', array_reverse(explode('-', $nova_data_vencimento)));
-
-
-			############## AGENDAR MENSAGEM PARA RENOVAÇÃO ###########################
-			$mensagem_whatsapp = '🔔_Lembrete Automático de Vencimento!_ %0A%0A';
-			$mensagem_whatsapp .= $saudacao . ' tudo bem? 😀%0A%0A';
-			$mensagem_whatsapp .= '_Queremos lembrar que você tem uma Conta Vencendo Hoje_ %0A%0A';
-			$mensagem_whatsapp .= 'Empresa: *' . $nome_sistema . '* %0A';
-			$mensagem_whatsapp .= 'Nome: *' . $nome_cliente . '* %0A';
-			$mensagem_whatsapp .= 'Valor: *R$ ' . $valorF . '* %0A';
-			$mensagem_whatsapp .= 'Data de Vencimento: *' . $nova_data_vencimentoF . '* %0A%0A';
-			$mensagem_whatsapp .= '_Entre em contato conosco para acertar o pagamento!_ %0A%0A';
-
-			if ($dados_pagamento != "") {
-				$mensagem_whatsapp .= '*Dados para o Pagamento:* %0A';
-				$mensagem_whatsapp .= $dados_pagamento;
-			}
-
-			$mensagem_whatsapp .= '%0A';
-			$mensagem_whatsapp .= '🤖 _Esta é uma mensagem automática!_';
-
-			$data_agd = $nova_data_vencimento . ' 09:00:00';
-
-			require('../../apis/agendar.php');
-
-			$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id_ult_registro'");
-
-
-		}
-
+	
 
 	}
 
 } else {
-	$query = $pdo->prepare("UPDATE $tabela SET descricao = :descricao, cliente = :cliente, valor = :valor, vencimento = '$vencimento' $pgto, forma_pgto = '$forma_pgto', frequencia = '$frequencia', obs = :obs, arquivo = '$foto', subtotal = :valor, quant_recorrencia = :quant_recorrencia where id = '$id'");
+	$query = $pdo->prepare("UPDATE $tabela SET descricao = :descricao, cliente = :cliente, valor = :valor, vencimento = '$vencimento' $pgto, forma_pgto = '$forma_pgto', frequencia = '$frequencia', obs = :obs, arquivo = '$foto', subtotal = :valor, quant_recorrencia = :quant_recorrencia, dispositivo = '$dispositivo', api_pagamento_conta = '$api_pagamento_conta' $sql_data_ass, pgtos_aceitaveis = '$pgtos_aceitaveis', taxa_cartao_api_receber = '$taxa_cartao_api_receber' where id = '$id'");
 
 
 	if ($vencimento_antiga != $vencimento) {
@@ -260,44 +253,12 @@ if ($id == "") {
 		$res4 = $query4->fetchAll(PDO::FETCH_ASSOC);
 		$hash = @$res4[0]['hash'];
 
-		if ($hash != "") {
-			require("../../apis/cancelar_agendamento.php");
-		}
+	
 
 		$vencimentoF = implode('/', array_reverse(explode('-', $vencimento)));
 
 
-		//enviar whatsapp
-		if ($api_whatsapp != 'Não' and $telefone_cliente != '') {
-
-
-			$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_cliente);
-
-			############## AGENDAR MENSAGEM PARA RENOVAÇÃO ###########################
-			$mensagem_whatsapp = '🔔_Lembrete Automático de Vencimento!_ %0A%0A';
-			$mensagem_whatsapp .= $saudacao . ' tudo bem? 😀%0A%0A';
-			$mensagem_whatsapp .= '_Queremos lembrar que você tem uma Conta Vencendo Hoje_ %0A%0A';
-			$mensagem_whatsapp .= 'Empresa: *' . $nome_sistema . '* %0A';
-			$mensagem_whatsapp .= 'Nome: *' . $nome_cliente . '* %0A';
-			$mensagem_whatsapp .= 'Valor: *R$ ' . $valorF . '* %0A';
-			$mensagem_whatsapp .= 'Data de Vencimento: *' . $vencimentoF . '* %0A%0A';
-			$mensagem_whatsapp .= '_Entre em contato conosco para acertar o pagamento!_ %0A%0A';
-
-
-			if ($dados_pagamento != "") {
-				$mensagem_whatsapp .= '*Dados para o Pagamento:* %0A';
-				$mensagem_whatsapp .= $dados_pagamento;
-			}
-
-			$mensagem_whatsapp .= '%0A';
-			$mensagem_whatsapp .= '🤖 _Esta é uma mensagem automática!_';
-
-			$data_agd = $vencimento . ' 09:00:00';
-			require('../../apis/agendar.php');
-
-			$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id'");
-
-		}
+		
 
 	}
 
@@ -313,43 +274,6 @@ $query->execute();
 $ultimo_id = $pdo->lastInsertId();
 
 $vencimentoF = implode('/', array_reverse(explode('-', $vencimento)));
-
-//enviar whatsapp
-if ($api_whatsapp != 'Não' and $telefone_cliente != '' and $data_pgto == '' and $id == '') {
-
-	$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_cliente);
-
-
-	############## AGENDAR MENSAGEM PARA RENOVAÇÃO ###########################
-	$mensagem_whatsapp = '🔔_Lembrete Automático de Vencimento!_ %0A%0A';
-	$mensagem_whatsapp .= $saudacao . ' tudo bem? 😀%0A%0A';
-	$mensagem_whatsapp .= '_Queremos lembrar que você tem uma Conta Vencendo Hoje_ %0A%0A';
-	$mensagem_whatsapp .= 'Empresa: *' . $nome_sistema . '* %0A';
-	$mensagem_whatsapp .= 'Nome: *' . $nome_cliente . '* %0A';
-	$mensagem_whatsapp .= 'Valor: *R$ ' . $valorF . '* %0A';
-	$mensagem_whatsapp .= 'Data de Vencimento: *' . $vencimentoF . '* %0A%0A';
-	$mensagem_whatsapp .= '_Entre em contato conosco para acertar o pagamento!_ %0A%0A';
-
-
-	if ($dados_pagamento != "") {
-		$mensagem_whatsapp .= '*Dados para o Pagamento:* %0A';
-		$mensagem_whatsapp .= $dados_pagamento;
-	}
-
-	$mensagem_whatsapp .= '%0A';
-	$mensagem_whatsapp .= '🤖 _Esta é uma mensagem automática!_';
-
-	$data_agd = $vencimento . ' 09:00:00';
-	require('../../apis/agendar.php');
-
-	$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$ultimo_id'");
-
-}
-
-
-
-
-
 
 
 
@@ -367,9 +291,7 @@ if ($quant_recorrencia > 0) {
 				$hash = @$res[$i]['hash'];
 				$id_conta = @$res[$i]['id'];
 
-				if ($hash != "") {
-					require("../../apis/cancelar_agendamento.php");
-				}
+				
 				$pdo->query("DELETE FROM $tabela WHERE id = '$id_conta'");
 
 			}
@@ -383,6 +305,7 @@ if ($quant_recorrencia > 0) {
 	$dias_frequencia = $frequencia;
 
 	for ($i = 2; $i <= $qtd_parcelas; $i++) {
+		$data_venc = $vencimento;
 
 		$nova_descricao = $descricao;
 		$novo_valor = $valor;
@@ -416,7 +339,7 @@ if ($quant_recorrencia > 0) {
 
 
 
-		$query = $pdo->prepare("INSERT INTO $tabela SET descricao = :descricao, cliente = '$cliente', valor = :valor, vencimento = '$novo_vencimento', data_lanc = curDate(), frequencia = '0', forma_pgto = '$forma_pgto', obs = :obs, arquivo = '$foto', subtotal = :valor, usuario_lanc = '$id_usuario', pago = 'Não', referencia = 'Conta', caixa = '$id_caixa', hora = curTime() $usu_pgto, id_recorrencia = '$ultimo_id' ");
+		$query = $pdo->prepare("INSERT INTO $tabela SET descricao = :descricao, cliente = '$cliente', valor = :valor, vencimento = '$novo_vencimento', data_lanc = curDate(), frequencia = '0', forma_pgto = '$forma_pgto', obs = :obs, arquivo = '$foto', subtotal = :valor, usuario_lanc = '$id_usuario', pago = 'Não', referencia = 'Conta', hora = curTime() $usu_pgto, id_recorrencia = '$ultimo_id', empresa = '$id_empresa', hora_alerta = '$hora_random', dispositivo = '$dispositivo', api_pagamento_conta = '$api_pagamento_conta', pgtos_aceitaveis = '$pgtos_aceitaveis', taxa_cartao_api_receber = '$taxa_cartao_api_receber' ");
 
 
 
@@ -427,41 +350,7 @@ if ($quant_recorrencia > 0) {
 		$query->execute();
 		$ultimo_id_rec = $pdo->lastInsertId();
 
-
-
-		//enviar whatsapp
-		if ($api_whatsapp != 'Não' and $cliente > 0 and $telefone_cliente != '') {
-
-
-			$valorF = @number_format($valor, 2, ',', '.');
-			$nova_data_vencimentoF = implode('/', array_reverse(explode('-', $nova_data_vencimento)));
-			$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_cliente);
-
-
-			############## AGENDAR MENSAGEM PARA RENOVAÇÃO ###########################
-			$mensagem_whatsapp = '🔔_Lembrete Automático de Vencimento!_ %0A%0A';
-			$mensagem_whatsapp .= $saudacao . ' tudo bem? 😀%0A%0A';
-			$mensagem_whatsapp .= '_Queremos lembrar que você tem uma Conta Vencendo Hoje_ %0A%0A';
-			$mensagem_whatsapp .= 'Empresa: *' . $nome_sistema . '* %0A';
-			$mensagem_whatsapp .= 'Nome: *' . $nome_cliente . '* %0A';
-			$mensagem_whatsapp .= 'Valor: *R$ ' . $valorF . '* %0A';
-			$mensagem_whatsapp .= 'Data de Vencimento: *' . $novo_vencimento . '* %0A%0A';
-			$mensagem_whatsapp .= '_Entre em contato conosco para acertar o pagamento!_ %0A%0A';
-
-			if ($dados_pagamento != "") {
-				$mensagem_whatsapp .= '*Dados para o Pagamento:* %0A';
-				$mensagem_whatsapp .= $dados_pagamento;
-			}
-
-			$mensagem_whatsapp .= '%0A';
-			$mensagem_whatsapp .= '🤖 _Esta é uma mensagem automática!_';
-
-			$data_agd = $novo_vencimento . ' 08:00:00';
-			require('../../apis/agendar.php');
-
-			$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$ultimo_id_rec'");
-
-		}
+	
 
 	}
 

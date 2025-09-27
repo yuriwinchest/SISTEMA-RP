@@ -1,7 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'pagar';
 require_once("../../../conexao.php");
-@session_start();
+require_once("../../buscar_config.php");
+
 $id_usuario = $_SESSION['id'];
 
 $id = $_POST['id-baixar'];
@@ -10,11 +13,11 @@ $dia = date('d');
 $mes = date('m');
 $ano = date('Y');
 
+
+
 $valor = $_POST['valor-baixar'];
 $valor = str_replace(',', '.', $valor);
 
-$taxa = $_POST['valor-taxa'];
-$taxa = str_replace(',', '.', $taxa);
 
 $multa = $_POST['valor-multa'];
 $multa = str_replace(',', '.', $multa);
@@ -42,9 +45,7 @@ if ($juros == "") {
 if ($multa == "") {
 	$multa = 0;
 }
-if ($taxa == "") {
-	$taxa = 0;
-}
+
 if ($desconto == "") {
 	$desconto = 0;
 }
@@ -72,9 +73,6 @@ $vencimento = $res[0]['vencimento'];
 $quant_recorrencia = @$res[0]['quant_recorrencia'];
 $recorrencia_inf = @$res[0]['recorrencia_inf'];
 
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
 
 if ($fornecedor == "") {
 	$fornecedor = 0;
@@ -101,19 +99,9 @@ if ($valor <= 0) {
 
 
 
-//verificar caixa aberto
-$query1 = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and data_fechamento is null order by id desc limit 1");
-$res1 = $query1->fetchAll(PDO::FETCH_ASSOC);
-if (@count($res1) > 0) {
-	$id_caixa = @$res1[0]['id'];
-} else {
-	$id_caixa = 0;
-}
-//  
-
 if ($valor == $valor_antigo) {
 
-	$pdo->query("UPDATE $tabela set forma_pgto = '$saida', usuario_pgto = '$id_usuario', pago = 'Sim', subtotal = '$subtotal', taxa = '$taxa', juros = '$juros', multa = '$multa', desconto = '$desconto', data_pgto = '$data_baixar', caixa = '$id_caixa', hora = curTime() where id = '$id'");
+	$pdo->query("UPDATE $tabela set forma_pgto = '$saida', usuario_pgto = '$id_usuario', pago = 'Sim', subtotal = '$subtotal', juros = '$juros', multa = '$multa', desconto = '$desconto', data_pgto = '$data_baixar', hora = curTime() where id = '$id'");
 
 	//CRIAR A PRÓXIMA CONTA A PAGAR
 	$dias_frequencia = $frequencia;
@@ -136,7 +124,7 @@ if ($valor == $valor_antigo) {
 
 
 	if (@$dias_frequencia > 0 and $recorrencia_inf == 'Não' and ($quant_recorrencia == '' || $quant_recorrencia == '0')) {
-		$pdo->query("INSERT INTO $tabela set descricao = '$descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$valor_antigo', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$saida_antiga', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', usuario_lanc = '$id_usuario', caixa = '$id_caixa', hora = curTime(), recorrencia_inf = '$recorrencia_inf'");
+		$pdo->query("INSERT INTO $tabela set descricao = '$descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$valor_antigo', data_lanc = curDate(), vencimento = '$nova_data_vencimento', frequencia = '$frequencia', forma_pgto = '$saida_antiga', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', usuario_lanc = '$id_usuario', hora = curTime(), recorrencia_inf = '$recorrencia_inf', empresa = '$id_empresa', hora_alerta = '$hora_random' ");
 		$id_ult_registro = $pdo->lastInsertId();
 
 
@@ -162,34 +150,19 @@ if ($valor == $valor_antigo) {
 		}
 	}
 
-	$valor_antigo = $valor_antigo - ($subtotal - $taxa - $multa - $juros);
+	$valor_antigo = $valor_antigo - ($subtotal - $multa - $juros);
 
-	$pdo->query("INSERT INTO $tabela set id_ref = '$id', referencia = '$referencia', valor = '$valor_padrao', data_pgto = curDate(), vencimento = curDate(), data_lanc = curDate(), descricao = '$descricao', usuario_lanc = '$id_usuario', usuario_pgto = '$id_usuario', fornecedor = '$fornecedor', funcionario = '$funcionario', forma_pgto = '$saida', frequencia = '$frequencia', arquivo = '$arquivo', subtotal = '$subtotal', pago = 'Sim', taxa = '$taxa', multa = '$multa', juros = '$juros', desconto = '$desconto', residuo = 'Sim', caixa = '$id_caixa', hora = curTime()");
+	$pdo->query("INSERT INTO $tabela set id_ref = '$id', referencia = '$referencia', valor = '$valor_padrao', data_pgto = curDate(), vencimento = curDate(), data_lanc = curDate(), descricao = '$descricao', usuario_lanc = '$id_usuario', usuario_pgto = '$id_usuario', fornecedor = '$fornecedor', funcionario = '$funcionario', forma_pgto = '$saida', frequencia = '$frequencia', arquivo = '$arquivo', subtotal = '$subtotal', pago = 'Sim', multa = '$multa', juros = '$juros', desconto = '$desconto', residuo = 'Sim', hora = curTime(), empresa = '$id_empresa', hora_alerta = '$hora_random'");
 
 
 
 	$pdo->query("UPDATE $tabela set forma_pgto = '$saida', usuario_pgto = '$id_usuario', valor = '$valor_antigo', data_pgto = curDate() where id = '$id'");
 
 
-	if ($api_whatsapp != 'Não' and $telefone_sistema != '') {
-
-		$valorF = @number_format($valor_antigo, 2, ',', '.');
-
-		$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_sistema);
-		$mensagem_whatsapp = '*' . $nome_sistema . '*%0A';
-		$mensagem_whatsapp .= '_Conta Vencendo Hoje_ %0A';
-		$mensagem_whatsapp .= '*Descrição:* ' . $descricao . ' %0A';
-		$mensagem_whatsapp .= '*Valor:* ' . $valorF . ' %0A';
-
-		$data_agd = $vencimento . ' 08:00:00';
-		require('../../apis/agendar.php');
-
-		$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id'");
-
-	}
+	
 
 }
 
-echo 'Baixado com Sucesso';
+echo 'Baixado com Sucesso!';
 
 ?>

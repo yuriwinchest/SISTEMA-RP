@@ -1,6 +1,14 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
+
 $tabela = 'usuarios';
 require_once("../conexao.php");
+
+if($modo_teste == 'Sim'){
+	echo 'Em modo de teste esse recurso fica desabilitado!';
+	exit();
+}
 
 $nome = $_POST['nome'];
 $email = $_POST['email'];
@@ -23,8 +31,10 @@ if ($conf_senha != $senha) {
 	exit();
 }
 
+$data_nasc = date("Y-m-d", strtotime(str_replace("/", "-", $_POST["data_nasc"])));
+
 //validacao email
-$query = $pdo->query("SELECT * from $tabela where email = '$email'");
+$query = $pdo->query("SELECT * from $tabela where email = '$email' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
@@ -33,7 +43,7 @@ if (@count($res) > 0 and $id != $id_reg) {
 }
 
 //validacao telefone
-$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone'");
+$query = $pdo->query("SELECT * from $tabela where telefone = '$telefone' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
@@ -60,7 +70,7 @@ if ($total_reg > 0) {
 $nome_img = date('d-m-Y H:i:s') . '-' . @$_FILES['foto']['name'];
 $nome_img = preg_replace('/[ :]+/', '-', $nome_img);
 
-$caminho = 'images/perfil/' . $nome_img;
+$caminho = '../sas/images/perfil/' . $nome_img;
 
 $imagem_temp = @$_FILES['foto']['tmp_name'];
 
@@ -70,7 +80,7 @@ if (@$_FILES['foto']['name'] != "") {
 
 		//EXCLUO A FOTO ANTERIOR
 		if ($foto != "sem-foto.jpg") {
-			@unlink('images/perfil/' . $foto);
+			@unlink('../sas/images/perfil/' . $foto);
 		}
 
 		$foto = $nome_img;

@@ -1,12 +1,16 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
+
 $tabela = 'cargos';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 $nome = $_POST['nome'];
 $id = $_POST['id'];
 
 //validacao nome
-$query = $pdo->query("SELECT * from $tabela where nome = '$nome'");
+$query = $pdo->query("SELECT * from $tabela where nome = '$nome' and empresa = '$id_empresa'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $id_reg = @$res[0]['id'];
 if (@count($res) > 0 and $id != $id_reg) {
@@ -16,7 +20,7 @@ if (@count($res) > 0 and $id != $id_reg) {
 
 
 if ($id == "") {
-	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome ");
+	$query = $pdo->prepare("INSERT INTO $tabela SET nome = :nome, empresa = '$id_empresa' ");
 } else {
 	$query = $pdo->prepare("UPDATE $tabela SET nome = :nome where id = '$id'");
 }

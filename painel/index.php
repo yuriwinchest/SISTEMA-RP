@@ -3,6 +3,20 @@
 require_once("../conexao.php");
 require_once("verificar.php");
 
+@$_SESSION['entrar_empresa'] = 'Sim';
+$id_empresa = @$_SESSION['empresa'];
+
+$query = $pdo->query("SELECT * from config where empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+    $pdo->query("INSERT INTO config SET nome = '', email = '', telefone = '', logo = 'sem-foto.png', logo_rel = 'sem-foto.png', icone = 'sem-foto.png', ativo = 'Sim', multa_atraso = '0', juros_atraso = '0', marca_dagua = 'Sim', assinatura_recibo = 'Não', impressao_automatica = 'Não', api_whatsapp = 'Sim', alterar_acessos = 'Não', abertura_caixa = 'Sim', empresa = '$id_empresa', logo_painel = 'sem-foto.png'");
+}
+
+
+//trazer as configurações
+require_once("buscar_config.php");
+
 
 $data_atual = date('Y-m-d');
 $mes_atual = Date('m');
@@ -29,23 +43,13 @@ if ($mes_atual == '04' || $mes_atual == '06' || $mes_atual == '09' || $mes_atual
 
 
 
-$pag_inicial = 'home';
-if (@$_SESSION['nivel'] != 'Administrador') {
-	require_once("verificar_permissoes.php");
-}
-
-if (@$_GET['pagina'] != "") {
-	$pagina = @$_GET['pagina'];
-} else {
-	$pagina = $pag_inicial;
-}
-
 $id_usuario = @$_SESSION['id'];
 $query = $pdo->query("SELECT * from usuarios where id = '$id_usuario'");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
 	$nome_usuario = $res[0]['nome'];
+	$nome_usuario_perfil = $res[0]['nome'];
 	$email_usuario = $res[0]['email'];
 	$telefone_usuario = $res[0]['telefone'];
 	$senha_usuario = $res[0]['senha'];
@@ -54,26 +58,93 @@ if ($linhas > 0) {
 	$endereco_usuario = $res[0]['endereco'];
 	$mostrar_registros = $res[0]['mostrar_registros'];
 	$data_nasc_usuario = $res[0]['data_nasc'];
+	$data_nasc_usuarioF = implode('/', array_reverse(@explode('-', $data_nasc_usuario)));
 	$numero_usuario = $res[0]['numero'];
 	$bairro_usuario = $res[0]['bairro'];
 	$cidade_usuario = $res[0]['cidade'];
 	$estado_usuario = $res[0]['estado'];
 	$cep_usuario = $res[0]['cep'];
 	$complemento_usuario = $res[0]['complemento'];
+	$empresa_usuario = $res[0]['empresa'];
 } else {
-	echo '<script>window.location="../"</script>';
+	echo '<script>window.location="../login"</script>';
 	exit();
 }
 
 
+$pag_inicial = 'home';
+if (@$_SESSION['nivel'] != 'Administrador') {
+	if($empresa_usuario > 0){
+		require_once("verificar_permissoes.php");
+	}
+	
+}
+
+
+if($limitar_recursos == 'Sim'){
+	require_once("verificar_permissoes_recursos.php");
+}
+
+if (@$_GET['pagina'] != "") {
+	$pagina = @$_GET['pagina'];
+} else {
+	$pagina = $pag_inicial;
+}
+
+
+
+
 //verificar caixa aberto
-$query1 = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and data_fechamento is null order by id desc limit 1");
+$query1 = $pdo->query("SELECT * from caixas where operador = '$id_usuario' and data_fechamento is null and empresa = '$id_empresa' order by id desc limit 1");
 $res1 = $query1->fetchAll(PDO::FETCH_ASSOC);
 if (@count($res1) > 0) {
 	$texto_caixa = '<small><span style="color:green"> (Aberto)</span></small>';
 } else {
 	$texto_caixa = '<small><span style="color:red"> (Fechado)</span></small>';
 }
+
+
+
+//inserir as formas de pagametnos padrão
+$query = $pdo->query("SELECT * from formas_pgto where nome = 'Pix' and empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+	$pdo->query("INSERT INTO formas_pgto SET nome = 'Pix' , empresa = '$id_empresa', taxa = 0");
+}
+
+$query = $pdo->query("SELECT * from formas_pgto where nome = 'Boleto' and empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+	$pdo->query("INSERT INTO formas_pgto SET nome = 'Boleto' , empresa = '$id_empresa', taxa = 0");
+}
+
+$query = $pdo->query("SELECT * from formas_pgto where nome = 'Cartão de Crédito' and empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+	$pdo->query("INSERT INTO formas_pgto SET nome = 'Cartão de Crédito' , empresa = '$id_empresa', taxa = 0");
+}
+
+$query = $pdo->query("SELECT * from formas_pgto where nome = 'Cartão de Débito' and empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+	$pdo->query("INSERT INTO formas_pgto SET nome = 'Cartão de Débito' , empresa = '$id_empresa', taxa = 0");
+}
+
+
+
+$query = $pdo->query("SELECT * from cargos where nome = 'Técnico' and empresa = '$id_empresa'");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$linhas = @count($res);
+if ($linhas == 0) {
+	$pdo->query("INSERT INTO cargos SET nome = 'Técnico' , empresa = '$id_empresa'");
+}
+
+
+
 
 
 ?>
@@ -88,13 +159,13 @@ if (@count($res1) > 0) {
 	<meta charset="UTF-8">
 	<meta name='viewport' content='width=device-width, initial-scale=1.0, user-scalable=0'>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="Description" content="Fluxo Comunicação Inteligente">
-	<meta name="Author" content="Samuel Lima">
-	<meta name="Keywords" content="fluxo, comunicacao, inteligente, marketing, whatsapp" />
+	<meta name="Description" content="Sistemas de Hugo Vasconcelos Portal Hugo Cursos">
+	<meta name="Author" content="Hugo Vasconcelos">
+	<meta name="Keywords" content="sistemas hugo vasconcelos, sistemas hugo, sistemas portal hugo cursos, portal hugocursos, sistemas com php8" />
 
 	<title><?php echo $nome_sistema ?></title>
 
-	<link rel="icon" href="../img/icone.png" type="image/x-icon" />
+	<link rel="icon" href="../img/<?php echo $icone_sistema ?>" type="image/x-icon" />
 	<link href="../assets/css/icons.css" rel="stylesheet">
 	<link id="style" href="../assets/plugins/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
 	<link href="../assets/css/style.css" rel="stylesheet">
@@ -107,7 +178,7 @@ if (@count($res1) > 0) {
 	<script src="js/jquery-1.11.1.min.js"></script>
 	<script src="js/modernizr.custom.js"></script>
 
-
+	<link rel="stylesheet" href="css/monthly.css">
 
 	<!-- fontawesome-->
 	<link rel="stylesheet" type="text/css" href="../fontawesome/css/all.min.css">
@@ -121,6 +192,13 @@ if (@count($res1) > 0) {
 
 	<!-- SweetAlert JS -->
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+	<!-- Trumbowyg  -->
+    <link rel="stylesheet" href="../dist/ui/trumbowyg.min.css">
+    <link rel="stylesheet" href="../dist/plugins/emoji/ui/trumbowyg.emoji.min.css">
+    <link rel="stylesheet" href="../dist/plugins/colors/ui/trumbowyg.colors.min.css">
 	
 
 </head>
@@ -130,7 +208,7 @@ if (@count($res1) > 0) {
 	<?php if ($mostrar_preloader == 'Sim') { ?>
 		<!-- GLOBAL-LOADER -->
 		<div id="global-loader">
-			<img src="../img/loader.gif" class="loader-img loader loader_mobile" alt="">
+			<img src="../img/loader2.gif" class="loader-img loader loader_mobile" alt="">
 		</div>
 		<!-- /GLOBAL-LOADER -->
 	<?php } ?>
@@ -143,31 +221,25 @@ if (@count($res1) > 0) {
 			<div class="main-header side-header sticky nav nav-item">
 				<div class=" main-container container-fluid">
 					<div class="main-header-left ">
-
-
 						<div class="responsive-logo logo_painel">
 							<a href="index.php" class="header-logo">
-								<img src="../img/foto-painel.png" class="obile-logo dark-logo-1 logo_painel" alt="logo"
-									style="margin-left: -120px !important">
+								<img src="../img/<?php echo $logo_painel ?>" class="obile-logo dark-logo-1 logo_painel" alt="logo"
+									style="margin-left: 50px !important">
 							</a>
 						</div>
-
 						<div class="app-sidebar__toggle" data-bs-toggle="sidebar">
-							<a class="open-toggle" href="javascript:void(0);"><i class="header-icon fe fe-align-left"></i></a>
+							<a id="btn_max" class="open-toggle" href="javascript:void(0);"><i class="header-icon fe fe-align-left"></i></a>
 							<a class="close-toggle" href="javascript:void(0);"><i class="header-icon fe fe-x"></i></a>
 						</div>
-
 						<div class="logo-horizontal">
 							<a href="index.php" class="header-logo">
-								<img src="../img/foto-painel.png" class="mobile-logo logo-1" alt="logo">
-								<img src="../img/foto-painel.png" class="mobile-logo dark-logo-1" alt="logo">
+								<img src="../img/<?php echo $logo_painel ?>" class="mobile-logo logo-1" alt="logo">
+								<img src="../img/<?php echo $logo_painel ?>" class="mobile-logo dark-logo-1" alt="logo">
 							</a>
 						</div>
 						<div class="main-header-center ms-4 d-sm-none d-md-none d-lg-block form-group">
-
 						</div>
 					</div>
-
 					<!-- Adiiconar data -->
 					<div class="ocultar_mobile ocultar_tablet">
 						<?php
@@ -195,7 +267,10 @@ if (@count($res1) > 0) {
 						if ($hora < 6 && $hora >= 0)
 							$saudacao = "Boa madrugada";
 
-						$primeiroNome = substr($nome_usuario, 0, strpos($nome_usuario, ' '));
+						$primeiroNome = @substr($nome_usuario, 0, @strpos($nome_usuario, ' '));
+						if($primeiroNome == ""){
+							$primeiroNome = $nome_usuario;
+						}
 
 
 						?>
@@ -220,7 +295,7 @@ if (@count($res1) > 0) {
 
 
 
-									<li class="dropdown nav-item ocultar_mobile">
+									<li class="dropdown nav-item ">
 										<a class="new nav-link theme-layout nav-link-bg layout-setting">
 											<span class="dark-layout"><svg xmlns="http://www.w3.org/2000/svg" class="header-icon-svgs"
 													width="24" height="24" viewBox="0 0 24 24">
@@ -238,15 +313,15 @@ if (@count($res1) > 0) {
 
 									<?php
 									if ($mostrar_registros == 'Não') {
-										$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' order by id asc");
+										$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' order by id asc");
 									} else {
-										$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' order by id asc");
+										$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and empresa = '$id_empresa' order by id asc");
 									}
 									$res = $query->fetchAll(PDO::FETCH_ASSOC);
 									$linhas = @count($res);
 									?>
 
-									<li class="dropdown nav-item  main-header-message <?php echo $receber ?>">
+									<li class="dropdown nav-item  main-header-message <?php echo @$receber ?>">
 										<a class="new nav-link" data-bs-toggle="dropdown" href="javascript:void(0);">
 											<small><i class="fa fa-dollar"></i></small>
 											<span class="badge  header-badge" style="background:green"><?php echo $linhas ?></span>
@@ -267,9 +342,9 @@ if (@count($res1) > 0) {
 
 												<?php
 												if ($mostrar_registros == 'Não') {
-													$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' order by id asc");
+													$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' order by id asc");
 												} else {
-													$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' order by id asc");
+													$query = $pdo->query("SELECT * from receber where vencimento < curDate() and pago != 'Sim' and empresa = '$id_empresa' order by id asc");
 												}
 												$res = $query->fetchAll(PDO::FETCH_ASSOC);
 												$linhas = @count($res);
@@ -306,15 +381,15 @@ if (@count($res1) > 0) {
 
 									<?php
 									if ($mostrar_registros == 'Não') {
-										$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' order by id asc");
+										$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' order by id asc");
 									} else {
-										$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' order by id asc");
+										$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and empresa = '$id_empresa' order by id asc");
 									}
 									$res = $query->fetchAll(PDO::FETCH_ASSOC);
 									$linhas = @count($res);
 									?>
 
-									<li class="dropdown nav-item  main-header-message <?php echo $pagar ?>">
+									<li class="dropdown nav-item  main-header-message <?php echo @$pagar ?>">
 										<a class="new nav-link" data-bs-toggle="dropdown" href="javascript:void(0);">
 											<small><i class="fa fa-dollar"></i></small>
 											<span class="badge  header-badge" style="background:red"><?php echo $linhas ?></span>
@@ -322,7 +397,7 @@ if (@count($res1) > 0) {
 
 
 
-										<div class="dropdown-menu">
+										<div class="dropdown-menu" >
 											<div class="menu-header-content text-start border-bottom">
 												<div class="d-flex">
 													<h6 class="dropdown-title mb-1 tx-15 font-weight-semibold">Contas a Pagar</h6>
@@ -335,9 +410,9 @@ if (@count($res1) > 0) {
 
 												<?php
 												if ($mostrar_registros == 'Não') {
-													$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' order by id asc");
+													$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and usuario_lanc = '$id_usuario' and empresa = '$id_empresa' order by id asc");
 												} else {
-													$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' order by id asc");
+													$query = $pdo->query("SELECT * from pagar where vencimento < curDate() and pago != 'Sim' and empresa = '$id_empresa' order by id asc");
 												}
 												$res = $query->fetchAll(PDO::FETCH_ASSOC);
 												$linhas = @count($res);
@@ -380,11 +455,11 @@ if (@count($res1) > 0) {
 
 									<li class="dropdown main-profile-menu nav nav-item nav-link ps-lg-2">
 										<a class="new nav-link profile-user d-flex" href="#" data-bs-toggle="dropdown"><img
-												src="images/perfil/<?php echo $foto_usuario ?>"></a>
+												src="../sas/images/perfil/<?php echo $foto_usuario ?>"></a>
 										<div class="dropdown-menu">
 											<div class="menu-header-content p-3 border-bottom">
 												<div class="d-flex wd-100p">
-													<div class="main-img-user"><img src="images/perfil/<?php echo $foto_usuario ?>"></div>
+													<div class="main-img-user"><img src="../sas/images/perfil/<?php echo $foto_usuario ?>"></div>
 													<div class="ms-3 my-auto">
 														<h6 class="tx-15 font-weight-semibold mb-0"><?php echo $nome_usuario ?></h6><span
 															class="dropdown-title-text subtext op-6  tx-12"><?php echo $nivel_usuario ?></span>
@@ -393,10 +468,17 @@ if (@count($res1) > 0) {
 											</div>
 											<a class="dropdown-item" href="" data-bs-target="#modalPerfil" data-bs-toggle="modal"><i
 													class="fa fa-user"></i>Perfil</a>
-											<span class="<?php echo $configuracoes ?>"><a class="dropdown-item " href=""
+											<span class="<?php echo @$configuracoes ?>"><a class="dropdown-item " href=""
 													data-bs-target="#modalConfig" data-bs-toggle="modal"><i class="fa fa-cogs "></i>
 													Configurações</a>
 											</span>
+
+											<?php if($empresa_usuario == "" || $empresa_usuario == 0){ ?>
+											<span ><a class="dropdown-item " href="../sas/"
+													><i class="fa fa-hand-o-left "></i>
+													Painel SAAS</a>
+											</span>
+										<?php } ?>
 
 											<a class="dropdown-item" href="logout.php"><i class="fa fa-arrow-left"></i> Sair</a>
 										</div>
@@ -412,14 +494,14 @@ if (@count($res1) > 0) {
 			</div> <!-- /APP-HEADER -->
 
 			<!--APP-SIDEBAR-->
-			<div class="sticky">
+			<div class="sticky" style="z-index: 1000 !important">
 				<aside class="app-sidebar">
 					<div class="main-sidebar-header active">
 						<a class="header-logo active" href="index.php">
-							<img src="../img/foto-painel.png" class="main-logo  desktop-logo" alt="logo">
-							<img src="../img/foto-painel.png" class="main-logo  desktop-dark" alt="logo">
-							<img src="../img/icone.png" class="main-logo  mobile-logo" alt="logo">
-							<img src="../img/icone.png" class="main-logo  mobile-dark" alt="logo">
+							<img src="../img/<?php echo $logo_painel ?>" class="main-logo  desktop-logo" alt="logo">
+							<img src="../img/<?php echo $logo_painel ?>" class="main-logo  desktop-dark" alt="logo">
+							<img src="../img/<?php echo $icone_sistema ?>" class="main-logo  mobile-logo" alt="logo">
+							<img src="../img/<?php echo $icone_sistema ?>" class="main-logo  mobile-dark" alt="logo">
 						</a>
 					</div>
 					<div class="main-sidemenu">
@@ -428,31 +510,25 @@ if (@count($res1) > 0) {
 								<path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" />
 							</svg></div>
 						<ul class="side-menu">
-
 							<li class="slide <?php echo @$home ?>">
 								<a class="side-menu__item" href="index.php">
 									<i class="fa fa-home text-white"></i>
 									<span class="side-menu__label" style="margin-left: 15px">Dashboard</span></a>
 							</li>
-
-
 							<li class="slide <?php echo @$menu_pessoas ?>">
 								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
 									<i class="fa fa-users text-white mt-1"></i>
 									<span class="side-menu__label" style="margin-left: 15px">Pessoas</span><i
 										class="angle fe fe-chevron-right"></i></a>
 								<ul class="slide-menu">
-
 									<li class="<?php echo @$clientes ?>"><a class="slide-item" href="clientes"> Clientes</a></li>
 									<li class="<?php echo @$usuarios ?>"><a class="slide-item" href="usuarios"> Usuários</a></li>
 									<li class="<?php echo @$funcionarios ?>"><a class="slide-item" href="funcionarios"> Funcionários</a>
 									</li>
 									<li class="<?php echo @$fornecedores ?>"><a class="slide-item" href="fornecedores"> Fornecedores</a>
 									</li>
-
 								</ul>
 							</li>
-
 
 
 							<li class="slide <?php echo @$menu_cadastros ?>">
@@ -462,25 +538,125 @@ if (@count($res1) > 0) {
 										class="angle fe fe-chevron-right"></i></a>
 								<ul class="slide-menu">
 
-									<li class="<?php echo @$formas_pgto ?>"><a class="slide-item" href="formas_pgto"> Formas Pgto</a></li>
+									
 
+									<li class="<?php echo @$equipamentos ?>"><a class="slide-item" href="equipamentos"> Equipamentos</a></li>
+
+									<li class="<?php echo @$marcas ?>"><a class="slide-item" href="marcas"> Marcas</a></li>
+
+									<li class="<?php echo @$modelos ?>"><a class="slide-item" href="modelos"> Modelos</a></li>
+
+									<li class="<?php echo @$servicos ?>"><a class="slide-item" href="servicos"> Serviços</a></li>
+
+									<li class="<?php echo @$formas_pgto ?>"><a class="slide-item" href="formas_pgto"> Formas Pgto</a></li>
 									<li class="<?php echo @$frequencias ?> "><a class="slide-item" href="frequencias"> Frequências</a>
 									</li>
-
 									<li class="<?php echo @$cargos ?> "><a class="slide-item" href="cargos"> Cargos</a></li>
 
+									<li class="<?php echo @$plano_contas ?> "><a class="slide-item" href="plano_contas"> Plano de Contas</a></li>
+
+
+									
+
+									<?php if($empresa_usuario == "" || $empresa_usuario == 0){ ?>
 									<?php if ($alterar_acessos == 'Sim') { ?>
 										<li class="<?php echo @$grupo_acessos ?>"><a class="slide-item" href="grupo_acessos"> Grupos de
 												Acessos</a></li>
-
 										<li class="<?php echo @$acessos ?>"><a class="slide-item" href="acessos">
 												Acessos</a></li>
-									<?php } ?>
+									<?php } } ?>
+								</ul>
+							</li>
+
+
+
+							<li class="slide <?php echo @$menu_produtos ?>">
+                                    <a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);"><i class="fa fa-shopping-cart text-white mt-1"></i>
+                                        <span class="side-menu__label" style="margin-left: 15px">Produtos</span><i class="angle fe fe-chevron-right"></i></a>
+                                    <ul class="slide-menu">
+
+                                        <li class="<?php echo $categorias ?>"><a class="slide-item" href="categorias"> Categorias</a></li>
+
+                                        <li class="<?php echo $sub_categorias ?>"><a class="slide-item" href="sub_categorias"> Sub Categoria</a></li>
+
+                                        <li class="<?php echo $produtos ?>"><a class="slide-item" href="produtos"> Produtos</a></li>
+
+                                        <li class="<?php echo $entradas ?>"><a class="slide-item" href="entradas"> Entradas</a></li>
+
+                                        <li class="<?php echo $saidas ?>"><a class="slide-item" href="saidas"> Saídas</a></li>
+
+                                        <li class="<?php echo $estoque ?>"><a class="slide-item" href="estoque"> Estoque Baixo</a></li>
+
+                                         <li class="<?php echo $compras ?>"><a class="slide-item" href="compras"> Compras</a></li>
+
+
+                                        <li class="<?php echo @$rel_prod_vendidos ?> "><a class="slide-item" href="" data-bs-toggle="modal" data-bs-target="#modalRelProd">Produtos Mais Vendidos</a></li>
+
+                                    </ul>
+                                </li>
+
+
+
+                                  <li class="slide <?php echo @$vendas ?>">
+                                    <a class="side-menu__item" data-bs-toggle="slide" href="vendas"><i class="fa fa-money text-white mt-1"></i>
+                                        <span class="side-menu__label" style="margin-left: 15px">Vendas / PDV</span></a>
+
+                                </li>
+
+
+                                <li class="slide <?php echo @$menu_orcamentos ?> <?php echo @$orcamentos_rec ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa fa-file text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Orçamentos</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$orcamentos ?> "><a class="slide-item" href="orcamentos">Novo Orçamento</a></li>			
+
+									<li class="<?php echo $orcamentos_pendentes ?>"><a class="slide-item" href="orcamentos_pendentes"> Pendentes</a>						
+
+									<li class="<?php echo $orcamentos_aprovados ?>"><a class="slide-item" href="orcamentos_aprovados"> Aprovados</a>	
+
+									<li class="<?php echo $orcamentos_vencidos ?>"><a class="slide-item" href="orcamentos_vencidos"> Vencidos</a>	
 
 								</ul>
 							</li>
 
 
+
+
+
+							  <li class="slide <?php echo @$menu_os ?> <?php echo @$os_rec ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa fa-file-pdf text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">OS</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$os ?> "><a class="slide-item" href="os">Nova  OS</a></li>			
+
+									<li class="<?php echo $os_abertas ?>"><a class="slide-item" href="#" onclick="chamarPag('Aberta')"> OS Abertas</a>						
+
+									<li class="<?php echo $os_iniciadas ?>"><a class="slide-item" href="#" onclick="chamarPag('Iniciada')"> OS Iniciadas</a>
+
+									<li class="<?php echo $os_aguardando ?>"><a class="slide-item" href="#" onclick="chamarPag('Aguardando Peça')"> OS Aguardando</a>
+
+									<li class="<?php echo $os_aprovacao ?>"><a class="slide-item" href="#" onclick="chamarPag('Aguardando Aprovação')"> OS Aprovação</a>
+
+									<li class="<?php echo $os_finalizadas ?>"><a class="slide-item" href="#" onclick="chamarPag('Finalizada')"> OS Finalizadas</a>
+
+									<li class="<?php echo $os_entregues ?>"><a class="slide-item" href="#" onclick="chamarPag('Entregue')"> OS Entregues</a>
+
+									<li class="<?php echo $os_sem_reparo ?>"><a class="slide-item" href="#" onclick="chamarPag('Sem Reparo')"> OS Sem Reparo</a>
+
+									<li class="<?php echo $os_nao_aprovadas ?>"><a class="slide-item" href="#" onclick="chamarPag('Não Aprovada')"> OS Não Aprovadas</a>
+
+									<li class="<?php echo $os_entregues_hoje ?>"><a class="slide-item" href="#" onclick="chamarPag('Hoje')"> OS Entregues Hoje</a>
+
+
+								</ul>
+							</li>
+
+                               
+                             
 
 
 							<li class="slide <?php echo @$menu_financeiro ?>">
@@ -489,33 +665,49 @@ if (@count($res1) > 0) {
 									<span class="side-menu__label" style="margin-left: 15px">Financeiro</span><i
 										class="angle fe fe-chevron-right"></i></a>
 								<ul class="slide-menu">
-
 									<li class="<?php echo @$pagar ?> "><a class="slide-item" href="pagar">Contas a Pagar</a></li>
-
 									<li class="<?php echo @$receber ?> "><a class="slide-item" href="receber">Contas a Receber</a></li>
+									<li class="<?php echo @$cobrancas ?> <?php echo $cobrancas_rec ?>"><a class="slide-item" href="cobrancas">Cobranças Recorrentes</a></li>
 
-									<li class="<?php echo @$rel_financeiro ?> ocultar_mobile_app"><a class="slide-item" href=""
-											data-bs-toggle="modal" data-bs-target="#modalRelFin"> Relatório Financeiro</a></li>
+									<li class="<?php echo @$lista_vendas ?>"><a class="slide-item" href="lista_vendas">Lista de Vendas</a></li>
 
+									<li class="<?php echo @$comissoes ?>"><a class="slide-item" href="comissoes">Comissões</a></li>
 
-									<li class="<?php echo @$rel_sintetico_despesas ?> ocultar_mobile_app"><a class="slide-item" href=""
-											data-bs-toggle="modal" data-bs-target="#modalRelSinDesp"> Rel Sintético Despesas</a></li>
-
-									<li class="<?php echo @$rel_sintetico_receber ?> ocultar_mobile_app"><a class="slide-item" href=""
-											data-bs-toggle="modal" data-bs-target="#modalRelSinRec"> Rel Sintético Receber</a></li>
-
-
-									<li class="<?php echo @$rel_balanco ?> ocultar_mobile_app"><a class="slide-item"
-											href="rel/balanco_anual_class.php" target="_blank"> Rel Balanço Anual</a></li>
-
-
-									<li class="<?php echo @$rel_inadimplementes ?> ocultar_mobile_app"><a class="slide-item"
-											href="rel/sintetico_inadimplentes_class.php" target="_blank"> Rel Inadimplementes</a></li>
+									<li class="<?php echo @$minhas_comissoes ?>"><a class="slide-item" href="minhas_comissoes">Minhas Comissões</a></li>
 
 								</ul>
 							</li>
 
+							<li class="slide <?php echo @$menu_relatorios ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa-solid fa-file-pdf text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Rel Financeiro</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$rel_financeiro ?> ocultar_mobile_app"><a class="slide-item" href=""
+											data-bs-toggle="modal" data-bs-target="#modalRelFin"> Relatório Financeiro</a></li>
 
+											<li class="<?php echo @$rel_vendas ?> ocultar_mobile_app"><a class="slide-item" href=""
+											data-bs-toggle="modal" data-bs-target="#modalRelVendas"> Relatório Vendas</a></li>
+
+
+									<li class="<?php echo @$rel_sintetico_despesas ?> ocultar_mobile_app"><a class="slide-item" href=""
+											data-bs-toggle="modal" data-bs-target="#modalRelSinDesp"> Rel Sintético Despesas</a></li>
+									<li class="<?php echo @$rel_sintetico_receber ?> ocultar_mobile_app"><a class="slide-item" href=""
+											data-bs-toggle="modal" data-bs-target="#modalRelSinRec"> Rel Sintético Receber</a></li>
+									<li class="<?php echo @$rel_balanco ?> ocultar_mobile_app"><a class="slide-item"
+											href="rel/balanco_anual_class.php" target="_blank"> Rel Balanço Anual</a></li>
+									<li class="<?php echo @$rel_inadimplementes ?> ocultar_mobile_app"><a class="slide-item"
+											href="rel/sintetico_inadimplentes_class.php" target="_blank"> Rel Inadimplementes</a></li>
+								</ul>
+							</li>
+
+
+							<li class="slide <?php echo @$site ?>">
+								<a class="side-menu__item " href="site">
+									<i class="fa fa-globe text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Dados do Site</span></a>
+							</li>
 
 
 							<li class="slide <?php echo @$caixas ?>">
@@ -525,29 +717,99 @@ if (@count($res1) > 0) {
 							</li>
 
 
-							<li class="slide <?php echo @$tarefas ?>">
-								<a class="side-menu__item" href="tarefas">
-									<i class="fa fa-calendar text-white"></i>
-									<span class="side-menu__label" style="margin-left: 15px">Tarefas / Agenda</span></a>
+							 <li class="slide <?php echo @$menu_tarefas ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa fa-calendar text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Tarefas / Agenda</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$tarefas ?> "><a class="slide-item" href="tarefas">Profissionais</a></li>			
+
+									<li class="<?php echo $tarefas_clientes ?>"><a class="slide-item" href="tarefas_clientes"> Clientes</a>						
+
+									
+
+								</ul>
 							</li>
 
-							<li class="slide <?php echo @$agendas ?>">
-								<a class="side-menu__item" href="agendas">
-									<i class="fa fa-calendar text-white"></i>
-									<span class="side-menu__label" style="margin-left: 15px">Agenda</span></a>
-							</li>
 
 							<li class="slide <?php echo @$anotacoes ?>">
 								<a class="side-menu__item" href="anotacoes">
 									<i class="fa fa-file-signature text-white"></i>
 									<span class="side-menu__label" style="margin-left: 15px">Anotações</span></a>
 							</li>
+							
+
+							<li class="slide <?php echo @$mensalidades ?>">
+								<a class="side-menu__item" href="mensalidades">
+									<i class="fa fa-money text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Mensalidades Sistema</span></a>
+							</li>
 
 
 
+							<li class="slide <?php echo @$menu_contratos ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa fa-file-pdf text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Contratos</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$rel_contratos ?> "><a class="slide-item" href="rel_contratos">Gerar Contratos</a></li>			
+
+									<li class="<?php echo @$listar_contratos ?> <?php echo $listar_contratos ?>"><a class="slide-item" href="listar_contratos"> Listar Contratos</a>						
+
+									<li class="<?php echo @$modelos_contratos ?> <?php echo $gestao_contratos ?>"><a class="slide-item" href="modelos_contratos"> Modelos Contratos</a>
+
+								</ul>
+							</li>
+
+
+							
+							<li class="slide <?php echo @$menu_marketing ?> <?php echo @$marketing_whats ?>">
+								<a class="side-menu__item" data-bs-toggle="slide" href="javascript:void(0);">
+									<i class="fa fa-comment-o text-white mt-1"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Marketing</span><i
+										class="angle fe fe-chevron-right"></i></a>
+								<ul class="slide-menu">
+									<li class="<?php echo @$marketing ?> "><a class="slide-item" href="marketing_whats">Campanhas</a></li>									
+
+									<li class="<?php echo @$grupos_disparos ?> "><a class="slide-item" href="grupos_disparos"> Grupos de Disparos</a></li>
+
+								</ul>
+							</li>
 
 
 
+							
+
+
+							 <li class="slide <?php echo @$rh ?> ">
+                                    <a class="side-menu__item" data-bs-toggle="slide" href="rh"><i class="fa fa-calendar text-white mt-1"></i>
+                                        <span class="side-menu__label" style="margin-left: 15px">RH</span></a>
+
+                                </li>
+						
+
+
+							<li class="slide <?php echo @$dispositivos ?>">
+								<a class="side-menu__item" href="dispositivos">
+									<i class="fa fa-mobile text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Conectar Whatsapp</span></a>
+							</li>
+
+
+							<li class="slide">
+								<a class="side-menu__item <?php echo @$chamados ?>" href="chamados">
+									<i class="fa fa-phone-square text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Abertura Chamados</span></a>
+							</li>
+
+
+							<li class="slide">
+								<a class="side-menu__item" href="tutoriais">
+									<i class="fa fa-video text-white"></i>
+									<span class="side-menu__label" style="margin-left: 15px">Tutoriais</span></a>
+							</li>
 
 						</ul>
 						<div class="slide-right" id="slide-right"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191" width="24"
@@ -600,8 +862,8 @@ if (@count($res1) > 0) {
 		<?php if ($pagina != 'vendas') { ?>
 			<div class="main-footer">
 				<div class="container-fluid pt-0 ht-100p">
-					Copyright © <?php echo date('Y'); ?> Desevolverdor <a href="https://www.monielsistemas.com.br" target="_blank"
-						class="text-primary"> monielsistemas.com.br</a>. Todos
+					Copyright © <?php echo date('Y'); ?> Desevolverdor <a href="https://www.hugocursos.com.br" target="_blank"
+						class="text-primary"> hugocursos.com.br</a>. Todos
 					os direitos reservados
 				</div>
 			</div>
@@ -656,6 +918,7 @@ if (@count($res1) > 0) {
 	<script src="../assets/plugins/datatable/responsive.bootstrap5.min.js"></script>
 
 
+
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
@@ -668,9 +931,10 @@ if (@count($res1) > 0) {
 	<!--INTERNAL  INDEX JS -->
 	<script src="../assets/js/index.js"></script>
 
-
-
-
+<!-- FULLCALENDER -->
+<script src="../fullcalendar/dist/index.global.min.js"></script>
+<script src="../fullcalendar/core/locales/pt-br.global.min.js"></script>
+<script src="js/fullcalendar.js"></script>
 
 </body>
 
@@ -686,108 +950,91 @@ if (@count($res1) > 0) {
 				<button id="btn-fechar" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span
 						class="text-white" aria-hidden="true">&times;</span></button>
 			</div>
-
 			<form id="form-perfil">
 				<div class="modal-body">
-
-
 					<div class="row">
 						<div class="col-md-6 mb-3 needs-validation was-validated">
 							<label>Nome</label>
 							<input type="text" class="form-control" id="nome_perfil" name="nome" placeholder="Seu Nome"
-								value="<?php echo @$nome_usuario ?>" required>
+								value="<?php echo @$nome_usuario_perfil ?>" required>
 						</div>
-
-
-
-						<div class="col-md-3 mb-3">
+						<div class="col-md-3 mb-2 col-6">
 							<label>Telefone</label>
-							<input type="text" class="form-control" id="telefone_perfil" name="telefone" placeholder="Seu Telefone"
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+								</div>
+								<input type="text" class="form-control" id="telefone_perfil" name="telefone" placeholder="Seu Telefone"
 								value="<?php echo @$telefone_usuario ?>" required>
+							</div>
 						</div>
-
-						<div class="col-md-3 mb-2">
-							<label>Nascimento</label>
-							<input type="date" class="form-control" id="data_nasc_perfil" name="data_nasc" placeholder=""
-								value="<?php echo @$data_nasc_usuario ?>">
+						<div class="col-md-3 mb-2 col-6">
+							<label>Data Nascimento</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="text" class="form-control" id="data_nasc_perfil" name="data_nasc" placeholder=""
+								value="<?php echo @$data_nasc_usuarioF ?>">
+							</div>
 						</div>
 					</div>
-
-
 					<div class="row">
-
-						<div class="col-md-6 mb-3">
+						<div class="col-md-6 mb-2 col-6">
 							<label>Email</label>
-							<input type="email" class="form-control" id="email_perfil" name="email" placeholder="Seu Nome"
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+								</div>
+								<input type="email" class="form-control" id="email_perfil" name="email" placeholder="Seu Nome"
 								value="<?php echo @$email_usuario ?>" required>
+							</div>
 						</div>
-
-
 						<div class="col-md-3 mb-3 needs-validation was-validated">
 							<label>Senha</label>
 							<input type="password" class="form-control" id="senha_perfil" name="senha" placeholder="Senha"
 								value="<?php echo @$senha_usuario ?>" required>
 						</div>
-
 						<div class="col-md-3 mb-3 needs-validation was-validated">
 							<label>Confirmar Senha</label>
 							<input type="password" class="form-control" id="conf_senha_perfil" name="conf_senha"
 								placeholder="Confirmar Senha" value="" required>
 						</div>
-
-
 					</div>
-
-
 					<div class="row">
-
 						<div class="col-md-3 mb-2">
 							<label>CEP</label>
 							<input type="text" class="form-control" id="cep_perfil" name="cep" placeholder="CEP"
 								onblur="pesquisacepperfil(this.value);" value="<?php echo @$cep_usuario ?>">
 						</div>
-
 						<div class="col-md-7 mb-2">
 							<label>Rua</label>
 							<input type="text" class="form-control" id="endereco_perfil" name="endereco" placeholder="Rua"
 								value="<?php echo @$endereco_usuario ?>">
 						</div>
-
 						<div class="col-md-2 mb-2">
 							<label>Número</label>
 							<input type="text" class="form-control" id="numero_perfil" name="numero" placeholder="Número"
 								value="<?php echo @$numero_usuario ?>">
 						</div>
 					</div>
-
 					<div class="row">
-
 						<div class="col-md-4 mb-2">
 							<label>Complemento</label>
 							<input type="text" class="form-control" id="complemento_perfil" name="complemento" placeholder="Bloco A AP 150" value="<?php echo @$complemento_usuario ?>">
 						</div>
-
 						<div class="col-md-4 mb-2">
 							<label>Bairro</label>
 							<input type="text" class="form-control" id="bairro_perfil" name="bairro" placeholder="Bairro"
 								value="<?php echo @$bairro_usuario ?>">
 						</div>
-
 						<div class="col-md-4 mb-2">
 							<label>Cidade</label>
 							<input type="text" class="form-control" id="cidade_perfil" name="cidade" placeholder="Cidade"
 								value="<?php echo @$cidade_usuario ?>">
 						</div>
-
-
-
-
 					</div>
-
-
-
 					<div class="row">
-
 						<div class="col-md-3 mb-2">
 							<label>Estado</label>
 							<select class="form-select" id="estado_perfil" name="estado" value="<?php echo @$estado_usuario ?>">
@@ -823,25 +1070,16 @@ if (@count($res1) > 0) {
 								<option value="EX" <?php if ($estado_usuario == 'EX') { ?> selected <?php } ?>>Estrangeiro</option>
 							</select>
 						</div>
-
 						<div class="col-md-5 mb-3">
 							<label>Foto</label>
 							<input type="file" class="form-control" id="foto_perfil" name="foto" value="<?php echo @$foto_usuario ?>"
 								onchange="carregarImgPerfil()">
 						</div>
-
 						<div class="col-md-3 mb-3">
-							<img src="images/perfil/<?php echo $foto_usuario ?>" width="80px" id="target-usu">
-
+						<img src="../sas/images/perfil/<?php echo $foto_usuario ?>" width="80px" id="target-usu">
 						</div>
-
-
 					</div>
-
-
 					<input type="hidden" name="id_usuario" value="<?php echo @$id_usuario ?>">
-
-
 					<br>
 					<small>
 						<div id="msg-perfil" align="center"></div>
@@ -859,10 +1097,6 @@ if (@count($res1) > 0) {
 </div>
 
 
-
-
-
-
 <!-- Modal Config -->
 <div class="modal fade" id="modalConfig" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-xl" role="document">
@@ -874,104 +1108,136 @@ if (@count($res1) > 0) {
 			</div>
 			<form id="form-config">
 				<div class="modal-body">
-
-
 					<div class="row mb-3">
 						<div class="col-md-4">
 							<label>Nome do Projeto</label>
 							<input type="text" class="form-control" id="nome_sistema" name="nome_sistema"
 								placeholder="Delivery Interativo" value="<?php echo @$nome_sistema ?>" required>
 						</div>
-
-						<div class="col-md-4">
-							<label>Email Sistema</label>
-							<input type="email" class="form-control" id="email_sistema" name="email_sistema"
+						<div class="col-md-5 mb-2 col-6">
+						<label>Email Sistema</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
+								</div>
+								<input type="email" class="form-control" id="email_sistema" name="email_sistema"
 								placeholder="Email do Sistema" value="<?php echo @$email_sistema ?>">
+							</div>
 						</div>
-
-
-						<div class="col-md-4">
-							<label>Telefone Sistema</label>
-							<input type="text" class="form-control" id="telefone_sistema" name="telefone_sistema"
+						<div class="col-md-3 mb-2 col-6">
+						<label>Telefone Sistema</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+								</div>
+								<input type="text" class="form-control" id="telefone_sistema" name="telefone_sistema"
 								placeholder="Telefone do Sistema" value="<?php echo @$telefone_sistema ?>" required>
+							</div>
 						</div>
-
 					</div>
-
 					<div class="row">
 						<div class="col-md-3">
 							<label>CNPJ Sistema</label>
 							<input type="text" class="form-control" id="cnpj_sistema" name="cnpj_sistema" placeholder="CNPJ"
 								value="<?php echo @$cnpj_sistema ?>">
 						</div>
-
 						<div class="col-md-3">
 							<label>Instagram</label>
 							<input type="text" class="form-control" id="instagram_sistema" name="instagram_sistema"
 								placeholder="Link do Instagram" value="<?php echo @$instagram_sistema ?>">
 						</div>
-
 						<div class="col-md-6">
-							<label>Dados para Pagamentos</label>
+							<label>Dados para Pagamentos (Deixar Vazio se for Usar api de pagamento)</label>
 							<input type="text" class="form-control" id="dados_pagamento" name="dados_pagamento"
-								placeholder="Vai aparecer nas cobranças se preenchido" value="<?php echo @$dados_pagamento ?>">
+								placeholder="Vai aparecer nas cobranças se preenchido em vez do link de pagamento" value="<?php echo @$dados_pagamento ?>">
 						</div>
-
 					</div>
-
-
 					<div class="row mb-3">
 						<div class="col-md-8">
 							<label>Endereço <small>(Rua Número Bairro e Cidade)</small></label>
 							<input type="text" class="form-control" id="endereco_sistema" name="endereco_sistema"
 								placeholder="Rua X..." value="<?php echo @$endereco_sistema ?>">
 						</div>
-
 						<div class="col-md-2">
 							<label>Multa Atraso Conta</label>
 							<input type="text" class="form-control" id="multa_atraso" name="multa_atraso" placeholder="Valor em R$"
 								value="<?php echo @$multa_atraso ?>">
 						</div>
-
 						<div class="col-md-2">
 							<label>Júros Atraso Dia Conta</label>
 							<input type="text" class="form-control" id="juros_atraso" name="juros_atraso" placeholder="Valor em %"
 								value="<?php echo @$juros_atraso ?>">
 						</div>
-
-
 					</div>
-
-
 					<div class="row mb-3">
-
 						<div class="col-md-3">
-							<label>Assinatura Recibo</label>
+							<label>
+								<div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">Mostrar ou não a assinatura nos recibos. <br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div>
+								Assinatura Recibo
+							</label>
 							<select name="assinatura_recibo" class="form-select">
 								<option value="Sim" <?php if ($assinatura_recibo == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($assinatura_recibo == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
 						<div class="col-md-3">
-							<label>Impressão Automática</label>
+							<label>
+								<div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">Se deixar ativado, ao clicar no botão de imprimir, o sistema irá imprimir automaticamente o recibo "Esta função só fuciona no navegadpor Firefox".
+											</p>
+										</div>
+									</div>
+								</div>
+								Impressão Automática
+							</label>
 							<select name="impressao_automatica" class="form-select">
 								<option value="Sim" <?php if ($impressao_automatica == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($impressao_automatica == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
-
 						<div class="col-md-3">
-							<label>Entrar Automáticamente</label>
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Se deixar ativado, você entrará automaticamente no sistema sem precisar inserir login e senha. Ative essa opção apenas se este computador for usado exclusivamente por você.".
+												
+											</p>
+										</div>
+									</div>
+								</div> Entrar Automáticamente</label>
 							<select name="entrar_automatico" class="form-select">
 								<option value="Sim" <?php if ($entrar_automatico == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($entrar_automatico == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
 						<div class="col-md-3">
-							<label>Mostrar PreLoader</label>
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">Se deixar ativado, aparecerá um preloader ao entrar no sistema e navegar entre as páginas.
+												
+											</p>
+										</div>
+									</div>
+								</div> Mostrar PreLoader</label>
 							<select name="mostrar_preloader" class="form-select">
 								<option value="Sim" <?php if ($mostrar_preloader == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($mostrar_preloader == 'Não') { ?> selected <?php } ?>>Não</option>
@@ -979,9 +1245,8 @@ if (@count($res1) > 0) {
 						</div>
 					</div>
 
-
+					<?php if($alterar_api_whatsapp == 'Sim'){ ?>
 					<div class="row mb-3">
-
 						<div class="col-md-3">
 							<label>
 								<div class="icones_mobile" class="dropdown" style="display: inline-block; ">
@@ -992,27 +1257,21 @@ if (@count($res1) > 0) {
 											<p class="mt-1">Integrei ao projeto 3 serviços de apis, estes serviços sáo terceirizados e tem
 												custo adicional
 												para utilização, segue abaixo site e contato dos 3. <br><br>
-
 												<b>1 - (Menuia)</b> Diego (81)98976-9960 <br>
 												<a href="https://chatbot.menuia.com/" target="_blank">https://chatbot.menuia.com/ </a>
 												<br><br>
-
 												<b>2 - (WordMensagens)</b> Bruno (44) 99986-3238 <br>
 												<a href="http://wordmensagens.com.br/sistema/index.php"
 													target="_blank">http://wordmensagens.com.br/sistema/index.php </a>
 												<br><br>
-
 												<b>3 - (NewTek)</b> Nando Silva (21) 99998-8666 <br>
 												<a href="https://webapp.newteksoft.com.br/" target="_blank">https://webapp.newteksoft.com.br/
 												</a>
 												<br><br>
-
 											</p>
-
 										</div>
 									</div>
 								</div>
-
 								Api Whatsapp <a href="#" onclick="testarApi()" title="Testar disparo Api">
 									<i class="fa-brands fa-whatsapp text-verde"></i></a>
 							</label>
@@ -1021,76 +1280,238 @@ if (@count($res1) > 0) {
 								<option value="menuia" <?php if ($api_whatsapp == 'menuia') { ?> selected <?php } ?>>Menuia</option>
 								<option value="wm" <?php if ($api_whatsapp == 'wm') { ?> selected <?php } ?>>WordMensagens</option>
 								<option value="newtek" <?php if ($api_whatsapp == 'newtek') { ?> selected <?php } ?>>NewTek</option>
+							</select>
+						</div>
+						<div class="col-md-4">
+							<label>App key Whatsapp (Token)</label>
+							<input type="text" class="form-control" id="token_whatsapp" name="token_whatsapp"
+								placeholder="Token ou App Key" value="<?php echo @$token_whatsapp ?>">
+						</div>
+						<div class="col-md-5">
+							<label>AuthKey Whatsapp (Instancia)  </label>
+							<input type="text" class="form-control" id="instancia_whatsapp" name="instancia_whatsapp"
+								placeholder="Instância ou authKey" value="<?php echo @$instancia_whatsapp ?>">
+						</div>
+					</div>
 
+				<?php } ?>
 
+					<div class="row mb-3">
+						<div class="col-md-3">
+							<label>
+								<div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">Não usar apis de pagamentos, usar o mercado pago ou usar a api do Asaas, se você não usar nenhuma insira alguma informação de cobrança no campo Dados para Pagamentos acima, e ao gerar uma cobrança aquelas informações serão mostradas. 
+												<br><br>
+											</p>
+										</div>
+									</div>
+								</div>
+								Api de Pagamento 
+							</label>
+							<select name="api_pagamento" id="api_pagamento" class="form-select">
+								<option value="" <?php if ($api_pagamento == '') { ?> selected <?php } ?>>Nenhuma</option>
+								<option value="Mercado Pago" <?php if ($api_pagamento == 'Mercado Pago') { ?> selected <?php } ?>>Mercado Pago</option>
+								<option value="Asaas" <?php if ($api_pagamento == 'Asaas') { ?> selected <?php } ?>>Asaas</option>
+								
 							</select>
 						</div>
 
 
-						<div class="col-md-4">
-							<label>Token Whatsapp (appkey)</label>
-							<input type="text" class="form-control" id="token_whatsapp" name="token_whatsapp"
-								placeholder="Token ou App Key" value="<?php echo @$token_whatsapp ?>">
-						</div>
-
-
-						<div class="col-md-5">
-							<label>Instância Whatsapp (authKey)</label>
-							<input type="text" class="form-control" id="instancia_whatsapp" name="instancia_whatsapp"
-								placeholder="Instância ou authKey" value="<?php echo @$instancia_whatsapp ?>">
+						<div class="col-md-9">
+							<label>Chave Token Asaas</label>
+							<input type="text" class="form-control" id="chave_api_asaas" name="chave_api_asaas" placeholder="Chave da api de integração do Asaas"
+								value="<?php echo @$chave_api_asaas ?>">
 						</div>
 
 
 					</div>
 
+					
+						<div class="row mb-3">
+						<div class="col-md-6">
+							<label>Access Token Mercado Pago</label>
+							<input type="text" class="form-control" id="access_token" name="access_token" placeholder="Chave access token Mercado pago"
+								value="<?php echo @$access_token_mp ?>">
+						</div>
+
+						<div class="col-md-6">
+							<label>Public Key Mercado Pago</label>
+							<input type="text" class="form-control" id="public_key" name="public_key" placeholder="Public Key do mercado pago"
+								value="<?php echo @$public_key_mp ?>">
+						</div>
+					</div>
 
 
-
-
-
+					
 					<div class="row mb-3">
-
-						<div class="col-md-3">
+						<div class="col-md-3" style="display:none">
 							<label>Ocultar Itens Mobile</label>
 							<select name="ocultar_mobile" class="form-select">
 								<option value="Sim" <?php if ($ocultar_mobile == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($ocultar_mobile == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
-
-
-						<div class="col-md-3">
-							<label>Alterar Acessos</label>
+						<div class="col-md-3" >
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Uso interno do sistema, para alterar os acessos dos usuários."<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Alterar Acessos</label>
 							<select name="alterar_acessos" class="form-select">
 								<option value="Sim" <?php if ($alterar_acessos == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($alterar_acessos == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
-
-
 						<div class="col-md-3">
-							<label>Marca D'agua Rel</label>
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="Clique para ver as opções das apis" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Mostrar ou não a marca d'agua no relatório financeiro"<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Marca D'agua Rel</label>
 							<select name="marca_dagua" class="form-select">
 								<option value="Sim" <?php if ($marca_dagua == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($marca_dagua == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
-
 						<div class="col-md-3">
-							<label>Abert Obrigatória Caxa</label>
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"desixar ativado caso queira que o Usuário só faça venda após abrir a caixa."<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Abert Obrigatória Caixa</label>
 							<select name="abertura_caixa" class="form-select">
 								<option value="Sim" <?php if ($abertura_caixa == 'Sim') { ?> selected <?php } ?>>Sim</option>
 								<option value="Não" <?php if ($abertura_caixa == 'Não') { ?> selected <?php } ?>>Não</option>
 							</select>
 						</div>
 
+						<div class="col-md-3">
+							<label>Cidade Sistema (Contratos)</label>
+							<input type="text" class="form-control" id="cidade_sistema" name="cidade_sistema" placeholder="Aparecer nos contratos"
+								value="<?php echo @$cidade_sistema ?>">
+						</div>
 
 
+						
+					</div>
+
+
+
+					<div class="row mb-3">
+						
+						<div class="col-md-3">
+							<label>Dias Comissão Técnico</label>
+							<input type="text" class="form-control" id="dias_comissao" name="dias_comissao" placeholder="Agendar comissão para x dias"
+								value="<?php echo @$dias_comissao ?>">
+						</div>
+
+
+						<div class="col-md-3">
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Ao deixar Sim quando for gerar certos contratos vai aparecer a opção para enviar para o cliente assinar antes!"<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Assinatura Contrato Cliente</label>
+							<select name="assinatura_cliente" class="form-select">
+								<option value="Sim" <?php if ($assinatura_cliente == 'Sim') { ?> selected <?php } ?>>Sim</option>
+								<option value="Não" <?php if ($assinatura_cliente == 'Não') { ?> selected <?php } ?>>Não</option>
+							</select>
+						</div>
+
+
+
+						<div class="col-md-3">
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Se essa opção tiver Sim, todo dia todos os clientes que estão com débitos serão cobrados!"<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Cobrar Automáticamente</label>
+							<select name="cobrar_automaticamente" class="form-select">
+								<option value="Sim" <?php if ($cobrar_automaticamente == 'Sim') { ?> selected <?php } ?>>Sim</option>
+								<option value="Não" <?php if ($cobrar_automaticamente == 'Não') { ?> selected <?php } ?>>Não</option>
+							</select>
+						</div>
+
+
+
+
+						<div class="col-md-3">
+							<label><div class="icones_mobile" class="dropdown" style="display: inline-block; ">
+									<a title="" href="#" aria-expanded="false" aria-haspopup="true"
+										data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-info-circle text-primary"></i> </a>
+									<div class="dropdown-menu tx-13" style="width:500px">
+										<div class="dropdown-item-text " style="width:500px; background: #c3fff0">
+											<p class="mt-1">"Se essa opção tiver Sim, todos os clientes vão receber uma cobrança pela manhã e outra a tarde / noite"<br><br>
+												
+											</p>
+										</div>
+									</div>
+								</div> Cobrar Duas Vezes ao Dia</label>
+							<select name="cobrar_duas_vezes" class="form-select">
+								<option value="Sim" <?php if ($cobrar_duas_vezes == 'Sim') { ?> selected <?php } ?>>Sim</option>
+								<option value="Não" <?php if ($cobrar_duas_vezes == 'Não') { ?> selected <?php } ?>>Não</option>
+							</select>
+						</div>
 
 					</div>
 
+
+					<div class="row">
+
+
+						<div class="col-md-3">
+							<label>Taxa Pagamento Cartão API %</label>
+							<input type="text" class="form-control" id="taxa_cartao_api" name="taxa_cartao_api" placeholder="Cartão Assas ou Mercado Pago"
+								value="<?php echo @$taxa_cartao_api ?>">
+						</div>
+						
+						<div class="col-md-6 mb-2  needs-validation was-validated <?php echo @$site ?>">
+							<label>Url Site</label>
+							<div class="input-group mb-3">								
+								<div style="display: flex; align-items: center;">
+								    <input type="text" value="<?php echo $url_sistema ?>site/" readonly
+								        style="background: #eee; border: 1px solid #ccc; padding: 6px; width: 370px;">
+								    <input type="text" class="form-control" name="url_site" id="url_site"
+								        placeholder="empresa1, loja1, etc" required=""
+								        style="flex: 1; border-left: none;" value="<?php echo $url_site ?>">
+								</div>
+							</div>
+						</div>
+					</div>
 
 
 					<div class="row mb-3">
@@ -1105,8 +1526,6 @@ if (@count($res1) > 0) {
 								<img src="../img/<?php echo $logo_sistema ?>" width="80px" id="target-logo">
 							</div>
 						</div>
-
-
 						<div class="col-md-4">
 							<div class="form-group">
 								<label>Ícone (*Png)</label>
@@ -1119,17 +1538,11 @@ if (@count($res1) > 0) {
 								<img src="../img/<?php echo $icone_sistema ?>" width="50px" id="target-icone">
 							</div>
 						</div>
-
-
 					</div>
-
-
-
-
 					<div class="row mb-3">
 						<div class="col-md-4">
 							<div class="form-group">
-								<label>Logo Relatório (*Jpg)</label>
+								<label>Logo Relatório 644 x 142 (*Jpg ou *Png)</label>
 								<input class="form-control" type="file" name="foto-logo-rel" onChange="carregarImgLogoRel();"
 									id="foto-logo-rel">
 							</div>
@@ -1139,10 +1552,6 @@ if (@count($res1) > 0) {
 								<img src="../img/<?php echo @$logo_rel ?>" width="80px" id="target-logo-rel">
 							</div>
 						</div>
-
-
-
-
 						<div class="col-md-4">
 							<div class="form-group">
 								<label>Logo Painél (Clara)(*PNG)</label>
@@ -1152,29 +1561,22 @@ if (@count($res1) > 0) {
 						</div>
 						<div class="col-md-2">
 							<div id="divImg">
-								<img src="../img/foto-painel.png" width="80px" id="target-painel">
+								<img src="../img/<?php echo @$logo_painel ?>" width="80px" id="target-painel">
 							</div>
 						</div>
-
-
 						<div class="col-md-4">
 							<div class="form-group">
-								<label>Assinatura (*Jpg)</label>
+								<label>Assinatura (*Jpg ou *png)</label>
 								<input class="form-control" type="file" name="assinatura_rel" onChange="carregarImgAssinatura();"
 									id="assinatura_rel">
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div id="divImg">
-								<img src="../img/assinatura.jpg" width="80px" id="target-assinatura">
+								<img src="../img/<?php echo $imagem_assinatura ?>" width="80px" id="target-assinatura">
 							</div>
 						</div>
-
-
-
 					</div>
-
-
 					<br>
 					<small>
 						<div id="msg-config" align="center"></div>
@@ -1226,16 +1628,24 @@ if (@count($res1) > 0) {
 					<div class="row">
 						<div class="col-md-4">
 							<label>Data Inicial</label>
-							<input type="date" name="dataInicial" id="dataInicialRel-Fin" class="form-control"
-								value="<?php echo $data_atual ?>">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataInicial" id="dataInicialRel-Fin" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
 						</div>
-
 						<div class="col-md-4">
 							<label>Data Final</label>
-							<input type="date" name="dataFinal" id="dataFinalRel-Fin" class="form-control"
-								value="<?php echo $data_atual ?>">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataFinal" id="dataFinalRel-Fin" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
 						</div>
-
 						<div class="col-md-4">
 							<label>Filtro Data</label>
 							<select name="filtro_data" class="form-select">
@@ -1245,8 +1655,6 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 					</div>
-
-
 					<div class="row">
 						<div class="col-md-4">
 							<label>Entradas / Saídas</label>
@@ -1255,13 +1663,16 @@ if (@count($res1) > 0) {
 								<option value="pagar">Saídas / Despesas</option>
 							</select>
 						</div>
-
 						<div class="col-md-4">
 							<label>Tipo Lançamento</label>
 							<select name="filtro_lancamento" class="form-select">
 								<option value="">Tudo</option>
 								<option value="Conta">Ganhos / Despesas</option>
-
+								<option value="Venda">Vendas</option>
+								<option value="Cobrança">Cobranças</option>
+								<option value="Serviço">Serviços</option>
+								<option value="Compra">Compras</option>
+								<option value="Comissão">Comissões</option>
 							</select>
 						</div>
 						<div class="col-md-4">
@@ -1273,9 +1684,6 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 					</div>
-
-
-
 				</div>
 				<div class="modal-footer">
 					<button type="submit" class="btn btn-primary">Gerar<i class="fa fa-check ms-2"></i></button>
@@ -1320,16 +1728,24 @@ if (@count($res1) > 0) {
 					<div class="row">
 						<div class="col-md-4">
 							<label>Data Inicial</label>
-							<input type="date" name="dataInicial" id="dataInicialRel-Sim-Des" class="form-control"
-								value="<?php echo $data_atual ?>">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataInicial" id="dataInicialRel-Sim-Des" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
 						</div>
-
 						<div class="col-md-4">
 							<label>Data Final</label>
-							<input type="date" name="dataFinal" id="dataFinalRel-Sim-Des" class="form-control"
-								value="<?php echo $data_atual ?>">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataFinal" id="dataFinalRel-Sim-Des" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
 						</div>
-
 						<div class="col-md-4">
 							<label>Filtro Data</label>
 							<select name="filtro_data" class="form-select">
@@ -1339,17 +1755,12 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 					</div>
-
-
 					<div class="row">
-
-
 						<div class="col-md-4">
 							<label>Tipo Filtro Contas</label>
 							<select name="filtro_lancamento" class="form-select">
 								<option value="fornecedor">Fornecedores</option>
 								<option value="funcionario">Funcionário</option>
-
 							</select>
 						</div>
 						<div class="col-md-4">
@@ -1361,9 +1772,6 @@ if (@count($res1) > 0) {
 							</select>
 						</div>
 					</div>
-
-
-
 				</div>
 				<div class="modal-footer">
 					<button type="submit" class="btn btn-primary">Gerar<i class="fa fa-check ms-2"></i></button>
@@ -1409,14 +1817,24 @@ if (@count($res1) > 0) {
 					<div class="row">
 						<div class="col-md-4">
 							<label>Data Inicial</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
 							<input type="date" name="dataInicial" id="dataInicialRel-Sim-Rec" class="form-control"
 								value="<?php echo $data_atual ?>">
+					</div>
 						</div>
 
 						<div class="col-md-4">
 							<label>Data Final</label>
-							<input type="date" name="dataFinal" id="dataFinalRel-Sim-Rec" class="form-control"
-								value="<?php echo $data_atual ?>">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataFinal" id="dataFinalRel-Sim-Rec" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
 						</div>
 
 						<div class="col-md-4">
@@ -1464,6 +1882,170 @@ if (@count($res1) > 0) {
 
 
 
+
+
+<!-- Modal Rel Produtos Vendidos -->
+<div class="modal fade" id="modalRelProd" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog ">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h4 class="modal-title" id="exampleModalLabel">Relatório de Produtos Mais Vendidos</h4>
+                <button id="btn-fechar-rel" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span class="text-white" aria-hidden="true">&times;</span></button>
+            </div>
+            <form method="POST" action="rel/produtos_vendidos_class.php" target="_blank">
+                <div class="modal-body">    
+                   
+
+                   <div class="row">
+
+                    
+
+                           <div class="col-md-8 col-6">
+                            <label>Quantidade de Produtos</label>
+                            <input type="text" name="quantidade" class="form-control" value="" placeholder="Deixe vazio se quiser todos">
+                        </div>   
+                    </div> 
+
+
+
+
+
+
+
+                </div>
+                <div class="modal-footer">       
+                    <button type="submit" class="btn btn-primary">Gerar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<!-- Modal Rel Vendas -->
+<div class="modal fade" id="modalRelVendas" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header bg-primary text-white">
+				<h4 class="modal-title" id="exampleModalLabel">Relatório de Vendas
+					<smdll>(
+						<a href="#" onclick="datas('1980-01-01', 'tudo-Ven', 'Ven')">
+							<span style="color:#fff" id="tudo-Ven">Tudo</span>
+						</a> /
+						<a href="#" onclick="datas('<?php echo $data_atual ?>', 'hoje-Ven', 'Ven')">
+							<span style="color:blue" id="hoje-Ven">Hoje</span>
+						</a> /
+						<a href="#" onclick="datas('<?php echo $data_inicio_mes ?>', 'mes-Ven', 'Ven')">
+							<span style="color:#fff" id="mes-Ven">Mês</span>
+						</a> /
+						<a href="#" onclick="datas('<?php echo $data_inicio_ano ?>', 'ano-Ven', 'Ven')">
+							<span style="color:#fff" id="ano-Ven">Ano</span>
+						</a>
+						)
+					</smdll>
+				</h4>
+				<button id="btn-fechar-config" aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"><span
+						class="text-white" aria-hidden="true">&times;</span></button>
+			</div>
+			<form method="POST" action="rel/vendas_class.php" target="_blank">
+				<div class="modal-body">
+					<div class="row">
+						<div class="col-md-6">
+							<label>Data Inicial</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataInicial" id="dataInicialRel-Ven" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
+						</div>
+						<div class="col-md-6">
+							<label>Data Final</label>
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<span class="input-group-text"><i class="fa-regular fa-calendar"></i></span>
+								</div>
+								<input type="date" name="dataFinal" id="dataFinalRel-Ven" class="form-control"
+									value="<?php echo $data_atual ?>">
+							</div>
+						</div>
+						
+					</div>
+					<div class="row">
+
+						<div class="col-md-4">
+							<label>Formas de Pagamentos</label>
+							<select name="forma_pgto" id="" class="sel_vendas" style="width:100%" onchange="listarVeiculosIndex()">
+								<option value="">Todas</option>
+								<?php 
+								$query = $pdo->query("SELECT * FROM formas_pgto where empresa = '$id_empresa' order by id desc");
+								$res = $query->fetchAll(PDO::FETCH_ASSOC);
+								for($i=0; $i < @count($res); $i++){
+									foreach ($res[$i] as $key => $value){}
+
+										?>	
+									<option value="<?php echo $res[$i]['id'] ?>"><?php echo $res[$i]['nome']?></option>
+
+								<?php } ?>
+							</select>
+						</div>
+
+
+						<div class="col-md-4">
+							<label>Filtrar por Clientes</label>
+							<select name="cliente" id="" class="sel_vendas" style="width:100%" onchange="listarVeiculosIndex()">
+								<option value="">Todos os Clientes</option>
+								<?php 
+								$query = $pdo->query("SELECT * FROM clientes where empresa = '$id_empresa' order by id desc");
+								$res = $query->fetchAll(PDO::FETCH_ASSOC);
+								for($i=0; $i < @count($res); $i++){
+									foreach ($res[$i] as $key => $value){}
+
+										?>	
+									<option value="<?php echo $res[$i]['id'] ?>"><?php echo $res[$i]['nome'] ?> - <?php echo $res[$i]['cpf'] ?></option>
+
+								<?php } ?>
+							</select>
+						</div>
+
+						<div class="col-md-4">
+							<label>Filtrar Vendedor</label>
+							<select name="funcionario" class="sel_vendas" style="width:100%">
+								<option value="">Todos</option>
+								<?php 
+								$query = $pdo->query("SELECT * FROM usuarios where empresa = '$id_empresa' and acessar_painel = 'Sim' order by id desc");
+								$res = $query->fetchAll(PDO::FETCH_ASSOC);
+								for($i=0; $i < @count($res); $i++){
+									foreach ($res[$i] as $key => $value){}
+
+										?>	
+									<option value="<?php echo $res[$i]['id'] ?>"><?php echo $res[$i]['nome'] ?></option>
+
+								<?php } ?>
+								
+							</select>
+						</div>
+						
+						
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-primary">Gerar<i class="fa fa-check ms-2"></i></button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+
+
 <!-- SweetAlert JS -->
 <script src="js/sweetalert2.all.min.js"></script>
 <script src="js/sweetalert1.min.css"></script>
@@ -1486,11 +2068,13 @@ if (@count($res1) > 0) {
 
 
 
+<!-- FULLCALENDER -->
+<script src="../fullcalendar/dist/index.global.min.js"></script>
+<script src="../fullcalendar/core/locales/pt-br.global.min.js"></script>
 
 
-<script src='js/index.global.min.js'></script>
-<script src="js/bootstrap5/index.global.min.js"></script>
-<script src='js/core/locales-all.global.min.js'></script>
+<!-- <script src='js/fullcalendar.js'></script> -->
+
 
 <script src='js/custom.js'></script>
 <script src='js/converter_data.js'></script>
@@ -1498,6 +2082,10 @@ if (@count($res1) > 0) {
 
 
 
+
+<script type="text/javascript" src="js/monthly.js"></script>
+
+		 <!-- calendar -->
 
 <script type="text/javascript">
 	$(document).ready(function() {
@@ -1542,6 +2130,11 @@ if (@count($res1) > 0) {
 		$('.sel36').select2({
 			dropdownParent: $('#modalForm')
 		});
+
+		$('.sel_vendas').select2({
+			dropdownParent: $('#modalRelVendas')
+		});
+
 
 
 		$('#cep_perfil').mask('00000-000');
@@ -1636,18 +2229,14 @@ if (@count($res1) > 0) {
 
 <script type="text/javascript">
 	$("#form-config").submit(function() {
-
 		event.preventDefault();
 		var formData = new FormData(this);
-
 		$('#btn_salvar_config').hide();
 		$('#btn_carregando_config').show();
-
 		$.ajax({
 			url: "editar-config.php",
 			type: 'POST',
 			data: formData,
-
 			success: function(mensagem) {
 				$('#msg-config').text('');
 				$('#msg-config').removeClass()
@@ -1655,26 +2244,17 @@ if (@count($res1) > 0) {
 					sucesso();
 					$('#btn-fechar-config').click();
 					location.reload();
-
-
 				} else {
-
 					$('#msg-config').addClass('text-danger')
 					$('#msg-config').text(mensagem)
 				}
-
 				$('#btn_salvar_config').show();
 				$('#btn_carregando_config').hide();
-
-
 			},
-
 			cache: false,
 			contentType: false,
 			processData: false,
-
 		});
-
 	});
 </script>
 
@@ -1813,7 +2393,7 @@ if (@count($res1) > 0) {
 			dataType: "html",
 
 			success: function(result) {
-				alert(result)
+				alertWarning(result)
 			}
 		});
 	}
@@ -1933,3 +2513,36 @@ if (@count($res1) > 0) {
 		document.getElementById(id).style.color = "blue";
 	}
 </script>
+
+
+<script type="text/javascript">
+	function chamarPag(filtro){
+		$.ajax({
+			url: 'funcoes/variaveis_sessao.php',
+			method: 'POST',
+			data: {
+				filtro
+			},
+			dataType: "html",
+
+			success: function(result) {
+				window.location="os_filtros"
+			}
+		});	
+	}
+</script>
+
+
+
+
+
+
+<script src="../dist/trumbowyg.min.js"></script>
+
+<script type="text/javascript" src="../dist/langs/pt_br.min.js"></script>
+
+<script src="../dist/plugins/emoji/trumbowyg.emoji.min.js"></script>
+
+<script src="../dist/plugins/colors/trumbowyg.colors.min.js"></script>
+<script src="../dist/plugins/fontfamily/trumbowyg.fontfamily.min.js"></script>
+<script src="../dist/plugins/fontsize/trumbowyg.fontsize.min.js"></script>

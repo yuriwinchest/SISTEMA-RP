@@ -1,5 +1,9 @@
 <?php 
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 include('../../conexao.php');
+
+include('../buscar_config.php');
 
 $id = $_POST['id'];
 
@@ -30,6 +34,9 @@ $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res2) > 0){
 	$nome_cliente = @$res2[0]['nome'];	
 	$tel_cliente = @$res2[0]['telefone'];		
+}else{
+	$nome_cliente = "";	
+	$tel_cliente = "";		
 }
 
 
@@ -127,7 +134,7 @@ if(@count($res2) > 0){
 <table class="printer-ticket">
 
 	<tr>
-		<th class="ttu" class="title" colspan="3"><img style="margin-top: 10px; margin-left: 50px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="180px">
+		<th class="ttu" class="title" colspan="3"><img style="margin-top: 10px; margin-left: 50px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="180px">
 		</th>
 	</tr>
 

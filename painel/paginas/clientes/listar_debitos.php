@@ -1,6 +1,9 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'receber';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 $data_atual = date('Y-m-d');
 $data_hoje = date('Y-m-d');
@@ -21,9 +24,9 @@ if ($linhas > 0) {
 	<table class="table table-striped table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela3">
 	<thead> 
 	<tr> 
-	<th>Descrição</th>
-	<th>Valor</th>	
-	<th>Vencimento</th>		
+	<th class="esc">Descrição</th>
+	<th >Valor</th>	
+	<th class="esc">Vencimento</th>		
 	<th>Baixar</th>				
 	</tr> 
 	</thead> 
@@ -85,7 +88,7 @@ HTML;
 		}
 
 
-		$query2 = $pdo->query("SELECT * FROM frequencias where dias = '$frequencia'");
+		$query2 = $pdo->query("SELECT * FROM frequencias where dias = '$frequencia' and empresa = '$id_empresa'");
 		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 		if (@count($res2) > 0) {
 			$nome_frequencia = $res2[0]['frequencia'];
@@ -127,8 +130,10 @@ HTML;
 
 		$taxa_conta = $taxa_pgto * $valor / 100;
 
-
-
+		$taxa_contaF = @number_format($taxa_conta, 2, ',', '.');
+		$valor_multaF = @number_format($valor_multa, 2, ',', '.');
+		$valor_jurosF = @number_format($valor_juros, 2, ',', '.');
+		
 
 		//PEGAR RESIDUOS DA CONTA
 		$total_resid = 0;
@@ -168,13 +173,16 @@ HTML;
 			$ocultar_cobranca = 'ocultar';
 		}
 
+		//echo $taxa_contaF;
+
+
 		echo <<<HTML
 <tr class="{$classe_venc}">
-<td width="45%"><i class="fa fa-square {$classe_pago} mr-1"></i> {$descricao}</td>
-<td class="esc">R$ {$valor_finalF}</td>
-<td class="esc">{$vencimentoF}</td>
-<td class="esc ">
-<big><a class="" href="#" onclick="baixar('{$id}', '{$valor}', '{$descricao}', '{$forma_pgto}', '{$taxa_conta}', '{$valor_multa}', '{$valor_juros}')" title="Baixar Conta"><i class="fa fa-check-square " style="color:#079934"></i></a></big>
+<td class="esc" width="45%"><i class="fa fa-square {$classe_pago} mr-1"></i> {$descricao}</td>
+<td class="">R$ {$valor_finalF}</td>
+<td class="esc" class="esc">{$vencimentoF}</td>
+<td class=" ">
+<big><a class="" href="#" onclick="baixar('{$id}', '{$valorF}', '{$descricao}', '{$forma_pgto}', '{$taxa_contaF}', '{$valor_multaF}', '{$valor_jurosF}')" title="Baixar Conta"><i class="fa fa-check-square " style="color:#079934"></i></a></big>
 
 <big><a class="{$ocultar} {$ocultar_cobranca} icones_mobile" href="#" onclick="cobrar('{$id}')" title="Gerar Cobrança"><i class="fa-brands fa-whatsapp " style="color:green"></i></a></big>
 
@@ -217,18 +225,11 @@ HTML;
 		$('#valor-baixar').val(valor);
 		$('#saida-baixar').val(pgto).change();
 		$('#subtotal').val(valor);
-
-		mascara_moeda('valor-baixar');
-
-
 		$('#valor-juros').val(juros);
-		$('#valor-desconto').val('');
+		$('#valor-desconto').val('0,00');
 		$('#valor-multa').val(multa);
 		$('#valor-taxa').val(taxa);
 
-		mascara_moeda('valor-juros');
-		mascara_moeda('valor-multa');
-		
 
 		totalizar()
 
@@ -245,9 +246,8 @@ HTML;
 				id
 			},
 			dataType: "html",
-
 			success: function(result) {
-				alert(result);
+				alertsucesso(result);
 			}
 		});
 	}

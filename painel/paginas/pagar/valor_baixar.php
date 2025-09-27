@@ -1,6 +1,7 @@
 <?php 
 $tabela = 'pagar';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
 $ids = $_POST['ids'];
 $total_contas = 0;

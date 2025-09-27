@@ -1,9 +1,11 @@
 <?php 
+include('data_formatada.php');
 
-include('../../conexao.php');
-require_once("data_formatada.php");
+if ($token_rel != 'M543661') {
+	echo '<script>window.location="../../"</script>';
+	exit();
+}
 
-$id = $_GET['id'];
 $data_atual = date('Y-m-d');
 
 
@@ -90,7 +92,7 @@ if($data_fechamento == ""){
 //buscar total movimentado pelo caixa
 //totalizar recebimentos
 $total_recebido = 0;
-$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id'");
+$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id' and empresa = '$id_empresa'");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res2) > 0){
 	for($i2=0; $i2 < @count($res2); $i2++){
@@ -101,7 +103,7 @@ if(@count($res2) > 0){
 
 //totalizar saidas
 $total_saidas = 0;
-$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id'");
+$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id'  and empresa = '$id_empresa'");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res2) > 0){
 	for($i2=0; $i2 < @count($res2); $i2++){
@@ -189,7 +191,7 @@ body {font-family: 'Tw Cen MT', sans-serif;}
 <?php 
 
 if($marca_dagua == 'Sim'){ ?>
-<img class="marca" src="<?php echo $url_sistema ?>img/logo.jpg">	
+<img class="marca" src="<?php echo $url_sistema ?>img/<?php echo $icone_sistema ?>">	
 <?php } ?>
 
 
@@ -199,14 +201,14 @@ if($marca_dagua == 'Sim'){ ?>
 		<table style="width: 100%; border: 0px solid #ccc;">
 			<tr>
 				<td style="border: 1px; solid #000; width: 40%; text-align: left;">
-					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/logo.jpg" width="110px">
+					<img style="margin-top: 7px; margin-left: 7px;" id="imag" src="<?php echo $url_sistema ?>img/<?php echo $logo_rel ?>" width="150px">
 				</td>				
 
 				<td style="width: 5%; text-align: center; font-size: 13px;">				
 
 				</td>
 				<td style="width: 40%; text-align: right; font-size: 9px;padding-right: 10px;">
-						<b><big>DETALHAMENTO CAIXA</big></b><br> <b>OPERADOR: </b><?php echo mb_strtoupper($nome_operador) ?> <br> <?php echo mb_strtoupper($data_hoje) ?>
+						<b><big>DETALHAMENTO CAIXA</big></b><br> <b>OPERADOR: </b><?php echo @mb_strtoupper($nome_operador) ?> <br> <?php echo @mb_strtoupper($data_hoje) ?>
 				</td>
 			</tr>		
 		</table>
@@ -275,7 +277,7 @@ if($marca_dagua == 'Sim'){ ?>
 
 				<tr id="cabeca" style="margin-left: 0px; background-color:#CCC; font-weight: bold">
 					<?php 
-						$query2 = $pdo->query("SELECT * FROM formas_pgto order by id asc");
+						$query2 = $pdo->query("SELECT * FROM formas_pgto  where empresa = '$id_empresa' order by id asc");
 						$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 						if(@count($res2) > 0){
 							for($i2=0; $i2 < @count($res2); $i2++){
@@ -293,7 +295,7 @@ if($marca_dagua == 'Sim'){ ?>
 				<tr id="cabeca" style="margin-left: 0px;">		
 
 					<?php 
-						$query2 = $pdo->query("SELECT * FROM formas_pgto order by id asc");
+						$query2 = $pdo->query("SELECT * FROM formas_pgto  where empresa = '$id_empresa' order by id asc");
 						$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 						if(@count($res2) > 0){
 							for($i2=0; $i2 < @count($res2); $i2++){
@@ -301,7 +303,7 @@ if($marca_dagua == 'Sim'){ ?>
 
 								//total de entradas por essa forma de pgto	
 								$total_recebido_pgto = 0;
-								$query3 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$id_pgto' and caixa = '$id'");
+								$query3 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$id_pgto' and caixa = '$id'  and empresa = '$id_empresa'");
 								$res3 = $query3->fetchAll(PDO::FETCH_ASSOC);
 								if(@count($res3) > 0){
 									for($i3=0; $i3 < @count($res3); $i3++){
@@ -345,7 +347,7 @@ $total_servicosF = 0;
 $total_consumoF = 0;
 $total_finalF = 0;
 
-$query = $pdo->query("SELECT * from receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id' ORDER BY ID ASC");
+$query = $pdo->query("SELECT * from receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id'  and empresa = '$id_empresa' ORDER BY ID ASC");
 
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
@@ -367,7 +369,7 @@ $hora = $res[$i]['hora'];
 $referencia = $res[$i]['referencia'];
 $forma_pgto = $res[$i]['forma_pgto'];
 
-$query2 = $pdo->query("SELECT * FROM formas_pgto where id = '$forma_pgto'");
+$query2 = $pdo->query("SELECT * FROM formas_pgto where id = '$forma_pgto'  and empresa = '$id_empresa'");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 $forma_pgtoF = @$res2[0]['nome'];	
 
@@ -473,7 +475,7 @@ if($referencia == 'Entrada' || $referencia == 'Restante'){
 				<tr id="cabeca" style="margin-left: 0px; background-color:#CCC; font-weight: bold">
 
 					<?php 
-						$query2 = $pdo->query("SELECT * FROM formas_pgto order by id asc");
+						$query2 = $pdo->query("SELECT * FROM formas_pgto  where empresa = '$id_empresa' order by id asc");
 						$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 						if(@count($res2) > 0){
 							for($i2=0; $i2 < @count($res2); $i2++){
@@ -491,7 +493,7 @@ if($referencia == 'Entrada' || $referencia == 'Restante'){
 				<tr id="cabeca" style="margin-left: 0px;">		
 
 					<?php 
-						$query2 = $pdo->query("SELECT * FROM formas_pgto order by id asc");
+						$query2 = $pdo->query("SELECT * FROM formas_pgto  where empresa = '$id_empresa' order by id asc");
 						$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 						if(@count($res2) > 0){
 							for($i2=0; $i2 < @count($res2); $i2++){
@@ -499,7 +501,7 @@ if($referencia == 'Entrada' || $referencia == 'Restante'){
 
 								//total de entradas por essa forma de pgto	
 								$total_recebido_pgto = 0;
-								$query3 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$id_pgto' and caixa = '$id'");
+								$query3 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and forma_pgto = '$id_pgto' and caixa = '$id'  and empresa = '$id_empresa'");
 								$res3 = $query3->fetchAll(PDO::FETCH_ASSOC);
 								if(@count($res3) > 0){
 									for($i3=0; $i3 < @count($res3); $i3++){
@@ -556,7 +558,7 @@ $total_servicosF = 0;
 $total_consumoF = 0;
 $total_finalF = 0;
 
-$query = $pdo->query("SELECT * from pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id' ORDER BY ID ASC");
+$query = $pdo->query("SELECT * from pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= '$data_fechamento_consulta' and caixa = '$id'  and empresa = '$id_empresa' ORDER BY ID ASC");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if($linhas > 0){
@@ -579,7 +581,7 @@ $referencia = $res[$i]['referencia'];
 $forma_pgto = $res[$i]['forma_pgto'];
 
 
-$query2 = $pdo->query("SELECT * FROM formas_pgto where id = '$forma_pgto'");
+$query2 = $pdo->query("SELECT * FROM formas_pgto where id = '$forma_pgto' and empresa = '$id_empresa'");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 $forma_pgtoF = @$res2[0]['nome'];	
 
@@ -775,7 +777,7 @@ if(@count($res2) > 0){
 <div id="footer" class="row">
 <hr style="margin-bottom: 0;">
 	<table style="width:100%;">
-		<tr style="width:100%;">
+		<tr style="width:100%; background:#FFF">
 			<td style="width:50%; font-size: 10px; text-align: left;"><?php echo $nome_sistema ?> Telefone: <?php echo $telefone_sistema ?></td>
 			<td style="width:50%; font-size: 10px; text-align: right;"> Endereço: <?php echo $endereco_sistema ?></td>
 		</tr>

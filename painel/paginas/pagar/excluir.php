@@ -1,8 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'pagar';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $nivel = @$_SESSION['nivel'];
 
 $id = $_POST['id'];
@@ -30,9 +32,7 @@ if ($foto != "sem-foto.png") {
 	@unlink('../../images/contas/' . $foto);
 }
 
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
+
 
 if ($quant_recorrencia > 0 or $recorrencia_inf == 'Sim') {
 	$query = $pdo->query("SELECT * from $tabela where id_recorrencia = '$id' and pago != 'Sim'");
@@ -43,9 +43,7 @@ if ($quant_recorrencia > 0 or $recorrencia_inf == 'Sim') {
 			$hash = @$res[$i]['hash'];
 			$id_conta = @$res[$i]['id'];
 
-			if ($hash != "") {
-				require("../../apis/cancelar_agendamento.php");
-			}
+			
 			$pdo->query("DELETE FROM $tabela WHERE id = '$id_conta'");
 
 		}

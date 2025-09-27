@@ -17,9 +17,6 @@ $id_recorrencia = @$res[0]['id_recorrencia'];
 				$hash = @$res[$i]['hash'];
 				$id_conta = @$res[$i]['id'];
 
-				if($hash != ""){
-					require("../../apis/cancelar_agendamento.php");
-				}
 				$pdo->query("DELETE FROM $tabela WHERE id = '$id_conta'");
 
 			}

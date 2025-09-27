@@ -1,194 +1,611 @@
-<?php 
+<?php
 @session_start();
-$id_usuario = @$_SESSION['id']; 
-$data_atual = date('Y-m-d');
-
-$tabela = 'tarefas';
+$id_empresa = @$_SESSION['empresa'];
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-$data = @$_POST['p1'];
-$usuario = @$_POST['p2'];
+$id_usuario = @$_SESSION['id'];
+$tabela = 'tarefas';
 
-if($data == ""){
+
+
+$data_hoje = date('Y-m-d');
+$data_atual = date('Y-m-d');
+$mes_atual = Date('m');
+$ano_atual = Date('Y');
+$data_inicio_mes = $ano_atual . "-" . $mes_atual . "-01";
+$data_inicio_ano = $ano_atual . "-01-01";
+
+$data_ontem = date('Y-m-d', @strtotime("-1 days", @strtotime($data_atual)));
+$data_amanha = date('Y-m-d', @strtotime("+1 days", @strtotime($data_atual)));
+
+
+if ($mes_atual == '04' || $mes_atual == '06' || $mes_atual == '07' || $mes_atual == '09') {
+	$data_final_mes = $ano_atual . '-' . $mes_atual . '-30';
+} else if ($mes_atual == '02') {
+	$bissexto = date('L', @mktime(0, 0, 0, 1, 1, $ano_atual));
+	if ($bissexto == 1) {
+		$data_final_mes = $ano_atual . '-' . $mes_atual . '-29';
+	} else {
+		$data_final_mes = $ano_atual . '-' . $mes_atual . '-28';
+	}
+} else {
+	$data_final_mes = $ano_atual . '-' . $mes_atual . '-31';
+}
+
+$dataInicial = @$_POST['p2'];
+$dataFinal = @$_POST['p3'];
+$filtro = @$_POST['p1'];
+$usuario = @$_POST['p5'];
+$data = @$_POST['p6'];
+$usuario_selecionado = @$_POST['p4'];
+
+if (empty($usuario_selecionado)) {
+	$usuario_selecionado = $id_usuario;
+}
+
+if ($dataInicial == "") {
+	$dataInicial = $data_inicio_mes;
+}
+
+if ($dataFinal == "") {
+	$dataFinal = $data_final_mes;
+}
+
+
+if ($data == "") {
 	$data = $data_atual;
 }
 
-if($usuario == ""){
+if ($usuario == "") {
 	$usuario = $id_usuario;
 }
 
 
-$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario' and status = 'Agendada' and data <= curDate() and hora < curTime() order by id desc");
+
+
+$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and data <= curDate() and hora < curTime() and empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $tarefas_atrasadas = @count($res);
 
-$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario' and status = 'Agendada' order by id desc");
+$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
-$total_tarefas = @count($res);
+$tarefas_pendentes = @count($res);
 
-
-$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario' and status = 'Agendada' and data = '$data' order by id desc");
+$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and data = '$data_atual' and empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
-$agendadas_hoje = @count($res);
+$tarefas_hoje = @count($res);
 
-$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario' and data = '$data' order by hora asc");
+$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Concluída' and data >= '$dataInicial' and data <= '$dataFinal' and empresa = '$id_empresa' order by id desc");
+$res = $query->fetchAll(PDO::FETCH_ASSOC);
+$tarefas_concluidas = @count($res);
+
+
+if ($filtro == 'Atrasadas') {
+	$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and data <= curDate() and hora < curTime() and empresa = '$id_empresa' order by hora asc");
+} else if ($filtro == 'Pendentes') {
+	$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and empresa = '$id_empresa' order by hora asc");
+} else if ($filtro == 'Hoje') {
+	$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Agendada' and data = '$data_atual' and empresa = '$id_empresa' order by hora asc");
+} else if ($filtro == 'Concluidas') {
+	$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and status = 'Concluída' and empresa = '$id_empresa' order by hora asc");
+} else {
+	$query = $pdo->query("SELECT * from $tabela where usuario = '$usuario_selecionado' and data >= '$dataInicial' and data <= '$dataFinal' and empresa = '$id_empresa' order by  CASE 
+   WHEN status = 'Agendada' THEN 1 ELSE 2 END, hora ASC");
+}
+
+
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
-if($linhas > 0){
-echo <<<HTML
-	<div class="row">
+if ($linhas > 0) {
+	echo <<<HTML
+<small>
+	<table class="table table-bordered text-nowrap border-bottom dt-responsive" id="tabela">
+	<thead>
+	<tr>
+	<th align="center" width="5%" class="text-center">Selecionar</th>
+	<th>Título</th>
+	<th width="7%">Data</th>
+	<th width="4%">Hora</th>
+	<th width="7%">Hora Alerta</th>
+	<th width="6%">Prioridade</th>
+	<th width="10%">Status</th>
+	<th width="20%">Ações</th>
+	</tr>
+	</thead>
+	<tbody>
+	<small>
 HTML;
-for($i=0; $i<$linhas; $i++){
-	$id = $res[$i]['id'];
-	$usuario = $res[$i]['usuario'];
-	$usuario_lanc = $res[$i]['usuario_lanc'];
-	$data = $res[$i]['data'];
-	$hora = $res[$i]['hora'];
-	$descricao = $res[$i]['descricao'];
-	$status = $res[$i]['status'];
-	$hora_mensagem = $res[$i]['hora_mensagem'];
-	$prioridade = $res[$i]['prioridade'];
 
-	if($status == 'Agendada'){
-		$bg_card = 'bg-red';
-		$ocultar_itens = '';
-	}else{
-		$bg_card = 'bg-success';
-		$ocultar_itens = 'ocultar';
+
+	for ($i = 0; $i < $linhas; $i++) {
+		$id = $res[$i]['id'];
+		$usuario = $res[$i]['usuario'];
+		$usuario_lanc = $res[$i]['usuario_lanc'];
+		$data = $res[$i]['data'];
+		$hora = $res[$i]['hora'];
+		$descricao = $res[$i]['descricao'];
+		$status = $res[$i]['status'];
+		$hora_mensagem = $res[$i]['hora_mensagem'];
+		$prioridade = $res[$i]['prioridade'];
+		$titulo = $res[$i]['titulo'];
+		$recorrencia = $res[$i]['recorrencia'];
+
+		$query2 = $pdo->query("SELECT * FROM frequencias where dias = '$recorrencia' and empresa = '$id_empresa'");
+		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
+		if (@count($res2) > 0) {
+			$nome_recorrencia = $res2[0]['frequencia'];
+		} else {
+			$nome_recorrencia = 'Sem Registro';
+		}
+
+
+		$query2 = $pdo->query("SELECT * FROM usuarios where id = '$usuario_lanc'");
+		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
+		if (@count($res2) > 0) {
+			$nome_usuario_cad = $res2[0]['nome'];
+		} else {
+			$nome_usuario_cad = '';
+		}
+
+		$query2 = $pdo->query("SELECT * FROM usuarios where id = '$usuario'");
+		$res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
+		if (@count($res2) > 0) {
+			$nome_usuario = $res2[0]['nome'];
+		} else {
+			$nome_usuario = '';
+		}
+
+		if ($status == 'Agendada') {
+			$bg_card = 'bg-red';
+			$ocultar_itens = '';
+			$cor_card = 'bg-danger-transparent text-danger';
+			$classe_tarefa = 'text-danger';
+		} else {
+			$bg_card = 'bg-success';
+			$ocultar_itens = 'ocultar';
+			$cor_card = 'bg-success-transparent text-success';
+			$classe_tarefa = 'text-success';
+		}
+
+		if ($prioridade == 'Baixa') {
+			$classe_pri = 'bg-info-transparent text-info';
+		} else if ($prioridade == 'Média') {
+			$classe_pri = 'bg-warning-transparent text-warning';
+		} else {
+			$classe_pri = 'bg-danger-transparent text-danger';
+		}
+
+
+		$dataF = implode('/', array_reverse(@explode('-', $data)));
+		$horaF = date("H:i", @strtotime($hora));
+		$hora_mensagemF = date("H:i", @strtotime($hora_mensagem));
+
+		$descricaoF = mb_strimwidth($descricao, 0, 50, "...");
+
+
+		echo <<<HTML
+<tr>
+<td align="center">
+<div class="custom-checkbox custom-control">
+<input type="checkbox" class="custom-control-input" id="seletor-{$id}" onchange="selecionar('{$id}')">
+<label for="seletor-{$id}" class="custom-control-label mt-1 text-dark"></label>
+</div>
+</td>
+<td><i class="fa fa-square {$classe_tarefa} mr-1"></i> {$titulo}</td>
+<td align="center">{$dataF}</td>
+<td align="center">{$horaF}</td>
+<td align="center">{$hora_mensagemF}</td>
+<td><span class="badge font-weight-semibold {$classe_pri} tx-12" style="width:100%;">{$prioridade}</span></td>
+<td><span class="badge font-weight-semibold {$cor_card} tx-12" style="width:100%;">{$status}</span></td>
+<td>
+
+	<a class="btn btn-info-light btn-sm {$ocultar_itens}" href="#" onclick="editar('{$id}','{$usuario}','{$data}','{$hora}','{$hora_mensagem}','{$descricao}','{$prioridade}','{$titulo}','{$recorrencia}')" title="Editar Dados"><i class="fa fa-edit"></i></a>
+
+<a class="btn btn-primary-light btn-sm" href="#" onclick="mostrar('{$nome_usuario_cad}','{$nome_usuario}','{$data}','{$hora}','{$descricao}','{$status}','{$hora_mensagem}','{$prioridade}','{$titulo}','{$nome_recorrencia}')" title="Mostrar Dados"><i class="fa-regular fa-eye"></i></a>
+
+<a class="btn btn-danger-light btn-sm {$ocultar_itens}" href="#" onclick="excluirTarefa('{$id}')" title="Excluir"><i class="fa fa-trash-can"></i></a>
+
+<a class="btn btn-success-light btn-sm {$ocultar_itens}" href="#" onclick="concluirTarefa('{$id}')" title="Concluir Tarefa"><i class="fa-solid fa-check"></i></a>
+
+</td>
+</tr>
+HTML;
 	}
 
-	if($prioridade == 'Baixa'){
-		$classe_pri = 'green';
-	}else if($prioridade == 'Média'){
-		$classe_pri = 'blue';
-	}else{
-		$classe_pri = 'red';
-	}
-	
-
-	$dataF = implode('/', array_reverse(@explode('-', $data)));
-	$horaF = date("H:i", @strtotime($hora));
-
-	$descricaoF = mb_strimwidth($descricao, 0, 50, "...");
-
-echo <<<HTML
-		<div class="card text-center col-md-3" style="box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.1);">		
-			<div class="card-header {$bg_card} border-light" style="font-size: 17px; padding:2px">
-	             {$horaF}
-	            
-
-	            <div class="dropdown pull-right" style="display: inline-block; margin-right: 5px;">                      
-                        <a class="" href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-close " style="color:#FFF"></i> </a>
-                        <div  class="dropdown-menu tx-13" style="background: transparent; border:none">
-                       <div class="dropdown-item-text botao_excluir" style="margin-left: -100px">
-                        <p>Confirmar Exclusão? <a href="#" onclick="excluirTarefa('{$id}')"><span class="text-danger">Sim</span></a></p>
-                        </div>
-                        </div>
-                        </div>
-	        </div>
-
-	        <div class="card-body" style="background: #f2f2f2; padding:2px">
-	        	<p class="card-text" style="margin-top:-15px; padding:2px; ">
-
-	        	<div class="dropdown" style="display: inline-block;">                      
-                        <a class="" href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown"><span style=" color:#4f4f4f; font-size: 12px; padding:3px" id=""><i class="fa fa-check-square " style="color:{$classe_pri}"></i> {$descricaoF}</span> </a>
-                   <div  class="dropdown-menu tx-13">
-                       <div class="dropdown-item-text" style="background: #f5f4eb">
-                        <p><i class="fa fa-check-square " style="color:{$classe_pri}"></i> {$descricao}</p>
-                        </div>
-                     </div>
-                 	</div>
-	        		
-	        	</p>
-
-	        	<div style="margin-top: -10px" class="{$ocultar_itens}">
-
-	        		<big><a class="icones_mobile" href="#" onclick="editar('{$id}','{$usuario}','{$data}','{$hora}','{$hora_mensagem}','{$descricao}','{$prioridade}')" title="Editar Dados"><i class="fa fa-edit " style="color:blue"></i></a></big>
-
-	        		<div class="icones_mobile" class="dropdown" style="display: inline-block;">                      
-                        <a title="Concluir Tarefa" href="#" aria-expanded="false" aria-haspopup="true" data-bs-toggle="dropdown" class="dropdown"><i class="fa fa-check-square " style="color:green"></i> </a>
-                        <div  class="dropdown-menu tx-13">
-                        <div class="dropdown-item-text botao_verde">
-                        <p>Concluir Tarefa? <a href="#" onclick="concluir('{$id}')"><span class="text-success">Sim</span></a></p>
-                        </div>
-                        </div>
-                        </div>
-
-	        	</div>
-	        </div>  
-
-
-
-    	</div>
+	echo <<<HTML
+</small>
+</tbody>
+<small><div align="center" id="mensagem-excluir"></div></small>
+</table>
+</small>
+<br>
 HTML;
-}
-echo <<<HTML
-	</div>
-HTML;
-
-}else{
+} else {
 	echo '<small>Nenhum Registro Encontrado!</small>';
 }
-
 ?>
 
-
-
 <script type="text/javascript">
-	$(document).ready( function () {	
+	$(document).ready(function () {
 
-	$('#tarefas_pendentes').text("<?=$total_tarefas?>");
-	$('#tarefas_dia').text("<?=$agendadas_hoje?>");
-	$('#tarefas_atrasadas').text("<?=$tarefas_atrasadas?>");
+		$('#tarefas_hoje').text("<?= $tarefas_hoje ?>");
+		$('#tarefas_pendentes').text("<?= $tarefas_pendentes ?>");
+		$('#tarefas_atrasadas').text("<?= $tarefas_atrasadas ?>");
+		$('#tarefas_concluidas').text("<?= $tarefas_concluidas ?>");
 
-    $('#tabela').DataTable({
-    	"language" : {
-            //"url" : '//cdn.datatables.net/plug-ins/1.13.2/i18n/pt-BR.json'
-        },
-        "ordering": false,
-		"stateSave": true
-    });
-} );
+
+		if (!$.fn.DataTable.isDataTable('#tabela')) {
+			$('#tabela').DataTable({
+				"language": {
+					//"url" : '//cdn.datatables.net/plug-ins/1.13.2/i18n/pt-BR.json'
+				},
+				"ordering": false,
+				"stateSave": true
+			});
+		}
+
+	});
 </script>
 
-<script type="text/javascript">
-	function editar(id, usuario, data, hora, hora_mensagem, descricao, prioridade){
+<script>
+	function editar(id, usuario, data, hora, hora_mensagem, descricao, prioridade, titulo, recorrencia) {
 		$('#mensagem').text('');
-    	$('#titulo_inserir').text('Editar Registro');
-
-    	if(hora_mensagem == '00:00:00'){
-    		hora_mensagem = '';
-    	}
-
-    	$('#id').val(id);
-    	$('#data').val(data);
-    	$('#hora').val(hora);
-    	$('#hora_alerta').val(hora_mensagem);
-    	$('#descricao').val(descricao);
-    	$('#usuario_tarefa').val(usuario);
-    	$('#prioridade').val(prioridade).change();
-
-    
-    	$('#modalForm').modal('show');
+		$('#titulo_inserir').text('Editar Tarefa');
+		$('#id').val(id);
+		$('#usuario').val(usuario);
+		$('#data_tarefa').val(data);
+		$('#hora').val(hora);
+		$('#hora_alerta').val(hora_mensagem);
+		$('#descricao').val(descricao);
+		$('#prioridade').val(prioridade).change();
+		$('#titulo').val(titulo);
+		$('#recorrencia').val(recorrencia).change();
+		$('#modalForm').modal('show');
 	}
+</script>
 
+<script>
+	function mostrar(usuario, usuario_lanc, data, hora, descricao, status, hora_mensagem, prioridade, titulo, recorrencia) {
+		$('#titulo_dados').text(titulo);
+		$('#usuario_dados').text(usuario);
+		$('#usuario_lanc_dados').text(usuario_lanc);
+		$('#data_dados').text(data);
+		$('#hora_dados').text(hora);
+		$('#descricao_dados').text(descricao);
+		$('#status_dados').text(status);
+		$('#hora_mensagem_dados').text(hora_mensagem);
+		$('#prioridade_dados').text(prioridade);
+		$('#recorrencia_dados').text(recorrencia);
 
+		$('#modalDados').modal('show');
+	}
+</script>
 
-	function limparCampos(){
+<script>
+	function limparCampos() {
 		$('#id').val('');
-    	$('#hora_alerta').val('');
-    	$('#hora').val('');
-    	$('#descricao').val('');
-    	
-    
+		$('#titulo').val('');
+		$('#usuario').val('');
+		$('#usuario_lanc').val('');
+		$('#data_tarefa').val("<?= $data_atual ?>");
+		$('#hora_alerta').val('');
+		$('#hora').val('');
+		$('#descricao').val('');
+		$('#prioridade').val('Baixa').change();
+		$('#recorrencia').val('0').change();
 
-    	$('#ids').val('');
-    	$('#btn-deletar').hide();	
+		$('#ids').val('');
+	}
+
+
+
+	function concluirTarefa(id) {
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+            cancelButton: "btn btn-danger me-1"
+        },
+        buttonsStyling: false
+    });
+
+    swalWithBootstrapButtons.fire({
+        title: "Concluir",
+		text: "Deseja Concluir esta Tarefa?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sim, Concluir!",
+        cancelButtonText: "Não, Cancelar!",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realiza a requisição AJAX para excluir o item
+            $.ajax({
+                url: 'paginas/' + pag + "/concluir.php",
+                method: 'POST',
+                data: { id },
+                dataType: "html",
+                success: function (mensagem) {
+                    if (mensagem.trim() == "Tarefa Concluída") {
+                        // Exibe mensagem de sucesso após a exclusão
+                        swalWithBootstrapButtons.fire({
+                            title: mensagem,
+                            text: 'Fecharei em 1 segundo.',
+                            icon: "success",
+                            timer: 1000,
+                            timerProgressBar: true,
+                            confirmButtonText: 'OK',
+                        });
+                        buscar();
+                        limparCampos()
+                    } else {
+                        // Exibe mensagem de erro se a requisição falhar
+                        swalWithBootstrapButtons.fire({
+                            title: "Opss!",
+                            text: mensagem,
+                            icon: "error",
+                            confirmButtonText: 'OK',
+                        });
+                    }
+                }
+            });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "Fecharei em 1 segundo.",
+                icon: "error",
+                timer: 1000,
+                timerProgressBar: true,
+            });
+        }
+    });
+}
+</script>
+
+
+<script type="text/javascript">
+
+	function selecionar(id) {
+		var ids = $('#ids').val();
+		if ($('#seletor-' + id).is(":checked") == true) {
+			var novo_id = ids + id + '-';
+			$('#ids').val(novo_id);
+		} else {
+			var retirar = ids.replace(id + '-', '');
+			$('#ids').val(retirar);
+		}
+		var ids_final = $('#ids').val();
+		if (ids_final == "") {
+			$('#btn-deletar').hide();
+			$('#btn-concluir').hide();
+		} else {
+			$('#btn-deletar').show();
+			$('#btn-concluir').show();
+		}
+	}
+
+
+
+	function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+
+		swalWithBootstrapButtons.fire({
+			title: "Deseja Excluir?",
+			text: "Você não conseguirá recuperá-lo novamente!",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "Sim, Excluir!",
+			cancelButtonText: "Não, Cancelar!",
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
+				// Realiza a requisição AJAX para excluir o item
+				var ids = $('#ids').val();
+				var id = ids.split("-");
+
+				for (i = 0; i < id.length - 1; i++) {
+					excluirMultiplos(id[i]);
+				}
+
+
+				alertexcluido('Excluido com Sucesso!')
+
+				$('#btn-deletar').hide();
+				$('#btn-concluir').hide();
+
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
+			}
+		});
 	}
 
 
 
 
 
-	
+	function concluirSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+
+		swalWithBootstrapButtons.fire({
+			title: "Concluir",
+			text: "Deseja Concluir as Tarefas Selecionadas?",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonText: "Sim, Concluir!",
+			cancelButtonText: "Não, Cancelar!",
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
+				// Realiza a requisição AJAX para excluir o item
+				var ids = $('#ids').val();
+				var id = ids.split("-");
+
+				for (i = 0; i < id.length - 1; i++) {
+					concluirMultiplos(id[i]);
+				}
+
+				// Exibe mensagem de sucesso após a exclusão
+				swalWithBootstrapButtons.fire({
+					title: 'Tarefa Concluída',
+					text: 'Fecharei em 2 segundo.',
+					icon: "success",
+					timer: 2000,
+					timerProgressBar: true,
+					confirmButtonText: 'OK',
+				});
+
+				$('#btn-deletar').hide();
+				$('#btn-concluir').hide();
+
+
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
+			}
+		});
+	}
+
+	function concluirMultiplos(id) {
+		//$('#mensagem-excluir').text('Excluindo...')
+
+		$.ajax({
+			url: 'paginas/' + pag + "/concluir.php",
+			method: 'POST',
+			data: { id },
+			dataType: "html",
+
+			success: function (mensagem) {
+				if (mensagem.trim() == "Tarefa Concluída") {
+					buscar();
+				} else {
+					alertErro(mensagem)
+				}
+			}
+		});
+	}
+
+	function deletarSelBaixar() {
+		var ids = $('#ids').val();
+		var id = ids.split("-");
+
+		for (i = 0; i < id.length - 1; i++) {
+			var novo_id = id[i];
+			$.ajax({
+				url: 'paginas/' + pag + "/baixar_multiplas.php",
+				method: 'POST',
+				data: {
+					novo_id
+				},
+				dataType: "html",
+
+				success: function (result) {
+					if (result.trim() == "Baixado com Sucesso") {
+						alertsucesso(result)
+					} else {
+						alertErro(result)
+					}
+
+				}
+			});
+		}
+
+
+	}
+
+
+
+
+// ALERT EXCLUIR #######################################
+function excluirTarefa(id) {
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+            cancelButton: "btn btn-danger me-1",
+            container: 'swal-whatsapp-container'
+        },
+        buttonsStyling: false
+    });
+
+    swalWithBootstrapButtons.fire({
+        title: "Deseja Excluir?",
+        text: "Você não conseguirá recuperá-lo novamente!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sim, Excluir!",
+        cancelButtonText: "Não, Cancelar!",
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Realiza a requisição AJAX para excluir o item
+            $.ajax({
+                url: 'paginas/' + pag + "/excluir.php",
+                method: 'POST',
+                data: { id },
+                dataType: "html",
+                success: function (mensagem) {
+                    if (mensagem.trim() == "Excluído com Sucesso") {
+                        // Exibe mensagem de sucesso após a exclusão
+                        swalWithBootstrapButtons.fire({
+                            title: mensagem,
+                            text: 'Fecharei em 1 segundo.',
+                            icon: "success",
+                            timer: 1000,
+                            timerProgressBar: true,
+                            confirmButtonText: 'OK',
+                            customClass: {
+                             container: 'swal-whatsapp-container'
+                             }
+                        });
+                        buscar();
+                        limparCampos()
+                    } else {
+                        // Exibe mensagem de erro se a requisição falhar
+                        swalWithBootstrapButtons.fire({
+                            title: "Opss!",
+                            text: mensagem,
+                            icon: "error",
+                            confirmButtonText: 'OK',
+                            customClass: {
+                             container: 'swal-whatsapp-container'
+                             }
+                        });
+                    }
+                }
+            });
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+            swalWithBootstrapButtons.fire({
+                title: "Cancelado",
+                text: "Fecharei em 1 segundo.",
+                icon: "error",
+                timer: 1000,
+                timerProgressBar: true,
+            });
+        }
+    });
+}
+
+
 </script>

@@ -1,10 +1,10 @@
 :root {
     /*  Padrão  */
-    --template1: #5CD3B9;
+    --template1: #5cb7d3;
     /* Painel lateral */
-    --template2: #00c499;
+    --template2: #0090c4;
     /* cor hover */
-    --template3: #00bb92;
+    --template3: #0086bb;
 }
 .field-icon {
   float: right;
@@ -130,14 +130,3 @@ hr.separador {
     max-width: 1320px;
     margin: 0 auto;
 }
-
-
-
-
-
-
-
-
-
-
-

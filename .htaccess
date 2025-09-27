@@ -1,0 +1,22 @@
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+
+RewriteRule ^pagamento/(.*)$ sas/pagamentos/index.php?id_conta=$1 [L]
+RewriteRule ^pagar/(.*)$ painel/pagamentos/index.php?id_conta=$1 [L]
+RewriteRule ^asaas/(.*)$ painel/asaas/index.php?id_conta=$1 [L]
+RewriteRule ^conta/(.*)$ sas/asaas/index.php?id_conta=$1 [L]
+
+RewriteRule ^contrato/(.*)$ painel/rel/contrato_class.php?id_contrato=$1 [L]
+
+RewriteRule ^acesso(.*)$ acesso.php [L]
+RewriteRule ^cliente(.*)$ acesso.php [L]
+RewriteRule ^planos(.*)$ index.php [L]
+RewriteRule ^assinaturas(.*)$ index.php [L]
+
+RewriteRule ^site/(.*)$ assinatura.php?url=$1 [L]
+RewriteRule ^login(.*)$ login.php [L]
+
+Options -Indexes
+

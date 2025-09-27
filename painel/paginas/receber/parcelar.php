@@ -1,8 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'receber';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $id_usuario = $_SESSION['id'];
 
 
@@ -47,11 +49,8 @@ $pago = $res[0]['pago'];
 $referencia = $res[0]['referencia'];
 $id_ref = $res[0]['id_ref'];
 $hash = $res[0]['hash'];
-
-
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
+$api_pagamento_conta = $res[0]['api_pagamento_conta'];
+$taxa_cartao_api_receber = $res[0]['taxa_cartao_api_receber'];
 
 if ($id_ref == "") {
 	$id_ref = 0;
@@ -127,46 +126,10 @@ for ($i = 1; $i <= $qtd_parcelas; $i++) {
 	}
 
 
-	$pdo->query("INSERT INTO $tabela set descricao = '$nova_descricao', cliente = '$cliente', valor = '$novo_valor', usuario_lanc = '$id_usuario', data_lanc = curDate(), vencimento = '$novo_vencimento', frequencia = '$frequencia', forma_pgto = '$saida', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', id_ref = '$id_ref', subtotal = '$novo_valor'");
+	$pdo->query("INSERT INTO $tabela set descricao = '$nova_descricao', cliente = '$cliente', valor = '$novo_valor', usuario_lanc = '$id_usuario', data_lanc = curDate(), vencimento = '$novo_vencimento', frequencia = '$frequencia', forma_pgto = '$saida', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', id_ref = '$id_ref', subtotal = '$novo_valor', empresa = '$id_empresa', hora_alerta = '$hora_random', api_pagamento_conta = '$api_pagamento_conta', taxa_cartao_api_receber = '$taxa_cartao_api_receber'");
 	$id_ult_registro = $pdo->lastInsertId();
 
-	if ($api_whatsapp != 'Não' and $telefone_cliente != '') {
-
-
-
-		$novo_valorF = @number_format($novo_valor, 2, ',', '.');
-		$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_cliente);
-		$novo_vencimentoF = implode('/', array_reverse(explode('-', $novo_vencimento)));
-
-
-		############## AGENDAR MENSAGEM PARA RENOVAÇÃO ###########################
-		$mensagem_whatsapp = '🔔_Lembrete Automático de Vencimento!_ %0A%0A';
-		$mensagem_whatsapp .= $saudacao . ' tudo bem? 😀%0A%0A';
-		$mensagem_whatsapp .= '_Queremos lembrar que você tem uma Conta Vencendo Hoje_ %0A%0A';
-		$mensagem_whatsapp .= 'Empresa: *' . $nome_sistema . '* %0A';
-		$mensagem_whatsapp .= 'Nome: *' . $nome_cliente . '* %0A';
-		$mensagem_whatsapp .= 'Valor: *R$ ' . $novo_valorF . '* %0A';
-		$mensagem_whatsapp .= 'Data de Vencimento: *' . $novo_vencimentoF . '* %0A%0A';
-		$mensagem_whatsapp .= '_Entre em contato conosco para acertar o pagamento!_ %0A%0A';
-
-		if ($dados_pagamento != "") {
-			$mensagem_whatsapp .= '*Dados para o Pagamento:* %0A';
-			$mensagem_whatsapp .= $dados_pagamento;
-		}
-
-		$mensagem_whatsapp .= '%0A';
-		$mensagem_whatsapp .= '🤖 _Esta é uma mensagem automática!_';
-
-		$data_agd = $novo_vencimento . ' 09:00:00';
-
-		require('../../apis/agendar.php');
-
-		$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id_ult_registro'");
-
-
-	}
-
-
+	
 
 }
 

@@ -1,10 +1,10 @@
 <?php 
-
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'caixas';
 
 require_once("../../../conexao.php");
-
-@session_start();
+require_once("../../buscar_config.php");
 
 $id_usuario = $_SESSION['id'];
 
@@ -16,14 +16,9 @@ $valor_abertura_fechar = $_POST['valor_abertura_fechar'];
 
 
 
-$total_caixa_fechar = str_replace(',', '', $total_caixa_fechar);
-
-
-
-$valor_abertura_fechar = str_replace('.', '', $valor_abertura_fechar);
-$valor_abertura_fechar = str_replace(',', '.', $valor_abertura_fechar);
-
-
+// 2. Converte a vírgula para ponto e remove os pontos de milhar
+$valor_abertura_fechar = str_replace(',', '.', str_replace('.', '', $valor_abertura_fechar));
+$total_caixa_fechar = str_replace(',', '.', str_replace('.', '', $total_caixa_fechar));
 
 $query2 = $pdo->query("SELECT * FROM caixas where id = '$id'");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
@@ -34,14 +29,14 @@ $data_abertura = @$res2[0]['data_abertura'];
 
 
 //pegar a forma de pagamento dinheiro
-$query2 = $pdo->query("SELECT * FROM formas_pgto where nome LIKE '%Dinheiro%'");
+$query2 = $pdo->query("SELECT * FROM formas_pgto where nome LIKE '%Dinheiro%' and empresa = '$id_empresa' ");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 $pgto_dinheiro = $res2[0]['id'];
 
 //buscar total movimentado pelo caixa
 //totalizar recebimentos
 $total_recebido = 0;
-$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= curDate() and forma_pgto = '$pgto_dinheiro' and caixa = '$id'");
+$query2 = $pdo->query("SELECT * FROM receber where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= curDate() and forma_pgto = '$pgto_dinheiro' and caixa = '$id'  and empresa = '$id_empresa' ");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res2) > 0){
 	for($i2=0; $i2 < @count($res2); $i2++){
@@ -52,7 +47,7 @@ if(@count($res2) > 0){
 
 //totalizar saidas
 $total_saidas = 0;
-$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= curDate() and forma_pgto = '$pgto_dinheiro' and caixa = '$id'");
+$query2 = $pdo->query("SELECT * FROM pagar where usuario_pgto = '$operador' and data_pgto >= '$data_abertura' and data_pgto <= curDate() and forma_pgto = '$pgto_dinheiro' and caixa = '$id'  and empresa = '$id_empresa' ");
 $res2 = $query2->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res2) > 0){
 	for($i2=0; $i2 < @count($res2); $i2++){
@@ -64,7 +59,7 @@ if(@count($res2) > 0){
 
 //totalizar sangrias
 $total_sangrias = 0;
-$query3 = $pdo->query("SELECT * FROM sangrias where caixa = '$id'");
+$query3 = $pdo->query("SELECT * FROM sangrias where caixa = '$id' ");
 $res3 = $query3->fetchAll(PDO::FETCH_ASSOC);
 if(@count($res3) > 0){
 	for($i3=0; $i3 < @count($res3); $i3++){

@@ -1,26 +1,29 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'fornecedores';
 require_once("../../../conexao.php");
 require_once("../../verificar.php");
+require_once("../../buscar_config.php");
 
-$query = $pdo->query("SELECT * from $tabela order by id desc");
+$query = $pdo->query("SELECT * from $tabela where empresa = '$id_empresa' order by id desc");
 $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $linhas = @count($res);
 if ($linhas > 0) {
 	echo <<<HTML
 <small>
 	<table class="table table-striped table-hover table-bordered text-nowrap border-bottom dt-responsive" id="tabela">
-	<thead> 
-	<tr> 
+	<thead>
+	<tr>
 	<th align="center" width="5%" class="text-center">Selecionar</th>
-	<th>Nome</th>	
-	<th>Telefone</th>			
+	<th>Empresa</th>
+	<th>Telefone</th>
+	<th>Vendedor</th>
 	<th>Pix</th>
-	<th>CNPJ</th>
 	<th>Ações</th>
-	</tr> 
-	</thead> 
-	<tbody>	
+	</tr>
+	</thead>
+	<tbody>
 HTML;
 
 	for ($i = 0; $i < $linhas; $i++) {
@@ -39,6 +42,8 @@ HTML;
 		$cnpj = $res[$i]['cnpj'];
 		$complemento = $res[$i]['complemento'];
 		$tipo_chave = $res[$i]['tipo_chave'];
+		$nome_vendedor = $res[$i]['nome_vendedor'];
+		$telefone_vendedor = $res[$i]['telefone_vendedor'];
 
 		$dataF = implode('/', array_reverse(@explode('-', $data)));
 
@@ -59,14 +64,14 @@ HTML;
 </td>
 <td>{$nome}</td>
 <td>{$telefone}</td>
+<td>{$nome_vendedor}</td>
 <td>{$chave_pix_mod}</td>
-<td>{$cnpj}</td>
 <td>
-	<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$pix}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$cnpj}','{$complemento}', '{$tipo_chave}')" title="Editar Dados"><i class="fa fa-edit"></i></a>
+	<a class="btn btn-info-light btn-sm" href="#" onclick="editar('{$id}','{$nome}','{$email}','{$telefone}','{$endereco}','{$pix}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$cnpj}','{$complemento}', '{$tipo_chave}','{$nome_vendedor}','{$telefone_vendedor}')" title="Editar Dados"><i class="fa fa-edit"></i></a>
 
 <big><a href="#" class="btn btn-danger-light btn-sm" onclick="excluir('{$id}')" title="Excluir"><i class="fa fa-trash-can"></i></a></big>
 
-<a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$pix}','{$dataF}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$cnpj}','{$complemento}', '{$tipo_chave}')" title="Mostrar Dados"><i class="fa fa-info-circle"></i></a>
+	<a class="btn btn-warning-light btn-sm" href="#" onclick="mostrar('{$nome}','{$email}','{$telefone}','{$endereco}','{$pix}','{$dataF}','{$numero}','{$bairro}','{$cidade}','{$estado}','{$cep}','{$cnpj}','{$complemento}', '{$tipo_chave}','{$nome_vendedor}','{$telefone_vendedor}')" title="Mostrar Dados"><i class="fa fa-eye"></i></a>
 
 <a class="btn btn-dark-light btn-sm" href="#" onclick="arquivo('{$id}', '{$nome}')" title="Inserir / Ver Arquivos"><i class="fa fa-file-o " ></i></a>
 
@@ -103,7 +108,7 @@ HTML;
 </script>
 
 <script type="text/javascript">
-	function editar(id, nome, email, telefone, endereco, pix, numero, bairro, cidade, estado, cep, cnpj, complemento, tipo_chave) {
+	function editar(id, nome, email, telefone, endereco, pix, numero, bairro, cidade, estado, cep, cnpj, complemento, tipo_chave, nome_vendedor, telefone_vendedor) {
 		$('#mensagem').text('');
 		$('#titulo_inserir').text('Editar Registro');
 
@@ -121,12 +126,14 @@ HTML;
 		$('#cep').val(cep);
 		$('#cnpj').val(cnpj);
 		$('#complemento').val(complemento);
+		$('#nome_vendedor').val(nome_vendedor);
+		$('#telefone_vendedor').val(telefone_vendedor);
 
 		$('#modalForm').modal('show');
 	}
 
 
-	function mostrar(nome, email, telefone, endereco, pix, data, numero, bairro, cidade, estado, cep, cnpj, complemento, tipo_chave) {
+	function mostrar(nome, email, telefone, endereco, pix, data, numero, bairro, cidade, estado, cep, cnpj, complemento, tipo_chave, nome_vendedor, telefone_vendedor) {
 
 		if (pix != '') {
 			$('#pix_dados').text(tipo_chave + ': ' + pix);
@@ -147,6 +154,8 @@ HTML;
 		$('#cep_dados').text(cep);
 		$('#cnpj_dados').text(cnpj);
 		$('#complemento_dados').text(complemento);
+		$('#nome_vendedor_dados').text(nome_vendedor);
+		$('#telefone_vendedor_dados').text(telefone_vendedor);
 
 		$('#modalDados').modal('show');
 	}
@@ -166,7 +175,8 @@ HTML;
 		$('#cnpj').val('');
 		$('#complemento').val('');
 		$('#tipo_chave').val('').change();
-
+		$('#nome_vendedor').val('');
+		$('#telefone_vendedor').val('');
 
 		$('#ids').val('');
 		$('#btn-deletar').hide();
@@ -203,33 +213,31 @@ HTML;
 		}
 	}
 
-	function deletarSel(id) {
-		//$('#mensagem-excluir').text('Excluindo...')
-
-		$('body').removeClass('timer-alert');
-		Swal.fire({
+		// ALERT EXCLUIR #######################################
+		function deletarSel(id) {
+		const swalWithBootstrapButtons = Swal.mixin({
+			customClass: {
+				confirmButton: "btn btn-success", // Adiciona margem à direita do botão "Sim, Excluir!"
+				cancelButton: "btn btn-danger me-1"
+			},
+			buttonsStyling: false
+		});
+		swalWithBootstrapButtons.fire({
 			title: "Deseja Excluir?",
 			text: "Você não conseguirá recuperá-lo novamente!",
-			icon: 'warning',
+			icon: "warning",
 			showCancelButton: true,
-			confirmButtonColor: '#d33', // Cor do botão de confirmação (vermelho)
-			cancelButtonColor: '#3085d6', // Cor do botão de cancelamento (azul)
 			confirmButtonText: "Sim, Excluir!",
-			cancelButtonText: "Cancel",
+			cancelButtonText: "Não, Cancelar!",
 			reverseButtons: true
 		}).then((result) => {
 			if (result.isConfirmed) {
-
-
-
-
+				// Realiza a requisição AJAX para excluir o item
 				var ids = $('#ids').val();
 				var id = ids.split("-");
-
 				for (i = 0; i < id.length - 1; i++) {
 					excluirMultiplos(id[i]);
 				}
-
 				setTimeout(() => {
 					// Ação de exclusão aqui
 					Swal.fire({
@@ -238,16 +246,18 @@ HTML;
 						icon: "success",
 						timer: 1000
 					})
-
 					listar();
 				}, 1000);
-
 				limparCampos();
-
-
+			} else if (result.dismiss === Swal.DismissReason.cancel) {
+				swalWithBootstrapButtons.fire({
+					title: "Cancelado",
+					text: "Fecharei em 1 segundo.",
+					icon: "error",
+					timer: 1000,
+					timerProgressBar: true,
+				});
 			}
 		});
-
-
-	};
+	}
 </script>

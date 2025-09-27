@@ -1,8 +1,10 @@
 <?php
+@session_start();
+$id_empresa = @$_SESSION['empresa'];
 $tabela = 'pagar';
 require_once("../../../conexao.php");
+require_once("../../buscar_config.php");
 
-@session_start();
 $id_usuario = $_SESSION['id'];
 
 $id = $_POST['id-parcelar'];
@@ -30,10 +32,6 @@ $referencia = $res[0]['referencia'];
 $id_ref = $res[0]['id_ref'];
 $hash = $res[0]['hash'];
 
-
-if ($hash != "") {
-	require("../../apis/cancelar_agendamento.php");
-}
 
 
 if ($id_ref == "") {
@@ -102,29 +100,9 @@ for ($i = 1; $i <= $qtd_parcelas; $i++) {
 	}
 
 
-	$pdo->query("INSERT INTO $tabela set descricao = '$nova_descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$novo_valor', usuario_lanc = '$id_usuario', data_lanc = curDate(), vencimento = '$novo_vencimento', frequencia = '$frequencia', forma_pgto = '$saida', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', id_ref = '$id_ref', subtotal = '$novo_valor'");
+	$pdo->query("INSERT INTO $tabela set descricao = '$nova_descricao', fornecedor = '$fornecedor', funcionario = '$funcionario', valor = '$novo_valor', usuario_lanc = '$id_usuario', data_lanc = curDate(), vencimento = '$novo_vencimento', frequencia = '$frequencia', forma_pgto = '$saida', arquivo = '$arquivo', pago = 'Não', referencia = '$referencia', id_ref = '$id_ref', subtotal = '$novo_valor', empresa = '$id_empresa', hora_alerta = '$hora_random'");
 	$id_ult_registro = $pdo->lastInsertId();
 
-	if ($api_whatsapp != 'Não' and $telefone_sistema != '') {
-
-		$novo_valorF = @number_format($novo_valor, 2, ',', '.');
-
-		$telefone_envio = '55' . preg_replace('/[ ()-]+/', '', $telefone_sistema);
-
-
-		$mensagem_whatsapp = '*Lembrete Automático de Vencimento!* 🤖 %0A%0A';
-
-		$mensagem_whatsapp .= '💰 *' . $nome_sistema . '*%0A';
-		$mensagem_whatsapp .= '_Conta Vencendo Hoje_ %0A';
-		$mensagem_whatsapp .= '*Descrição:* ' . $descricao . ' %0A';
-		$mensagem_whatsapp .= '*Valor:* ' . $novo_valorF . ' %0A';
-
-		$data_agd = $novo_vencimento . ' 09:00:00';
-		require('../../apis/agendar.php');
-
-		$pdo->query("UPDATE $tabela SET hash = '$hash' where id = '$id_ult_registro'");
-
-	}
 
 }
 

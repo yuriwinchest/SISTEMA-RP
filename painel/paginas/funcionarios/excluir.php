@@ -9,7 +9,7 @@ $res = $query->fetchAll(PDO::FETCH_ASSOC);
 $foto = $res[0]['foto'];
 
 if($foto != "sem-foto.jpg"){
-	@unlink('../../images/perfil/'.$foto);
+	@unlink('../../../sas/images/perfil/'.$foto);
 }
 
 $pdo->query("DELETE FROM $tabela WHERE id = '$id' ");
